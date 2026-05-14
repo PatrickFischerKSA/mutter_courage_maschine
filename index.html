@@ -101,7 +101,8 @@
           </article>
 
           <article class="composer-panel">
-            <h3>Neue Materialien einfügen</h3>
+            <h3>Generator und Preview</h3>
+            <p class="section-lead">Beantworte die Entscheidungsfragen, wähle einen Stil und generiere eine bearbeitbare Preview. Erst wenn sie sitzt, wandert sie in die Fassung.</p>
             <div class="form-grid two-column">
               <label class="question-block" for="blockTitle">Blocktitel<input id="blockTitle" type="text" data-field="block_title" placeholder="z.B. Drohnen-Feed, Kattrin-Alarm, Courage-Shop"></label>
               <label class="question-block" for="blockType">Typ<select id="blockType" data-field="block_type">
@@ -112,17 +113,61 @@
                 <option>Song-Sample</option>
               </select></label>
             </div>
+            <div class="form-grid two-column">
+              <label class="question-block" for="decisionTarget">Was soll der Eingriff leisten?<select id="decisionTarget" data-field="decision_target">
+                <option>Mitleid sabotieren</option>
+                <option>Krieg als Geschäft sichtbar machen</option>
+                <option>Figur entpsychologisieren</option>
+                <option>Gegenwart einschneiden</option>
+                <option>Publikum anklagen</option>
+                <option>Song als Störung bauen</option>
+              </select></label>
+              <label class="question-block" for="decisionMedium">Welches heutige Medium infiziert die Szene?<select id="decisionMedium" data-field="decision_medium">
+                <option>Livestream</option>
+                <option>Kommentarspalte</option>
+                <option>Shopping-Interface</option>
+                <option>Nachrichten-Ticker</option>
+                <option>Game-HUD</option>
+                <option>Behördenformular</option>
+              </select></label>
+              <label class="question-block" for="decisionAudience">Was soll mit dem Publikum passieren?<select id="decisionAudience" data-field="decision_audience">
+                <option>Es soll sich ertappt fühlen</option>
+                <option>Es soll Distanz gewinnen</option>
+                <option>Es soll ökonomisch mitgerechnet werden</option>
+                <option>Es soll keine Erlösung bekommen</option>
+                <option>Es soll in Verantwortung geraten</option>
+              </select></label>
+              <label class="question-block" for="styleProfile">Sprachmodus<select id="styleProfile" data-field="style_profile">
+                <option>Brechtischer Duktus</option>
+                <option>Nachrichten-Ticker</option>
+                <option>Social-Feed</option>
+                <option>Game-Interface</option>
+                <option>Behördenprotokoll</option>
+                <option>Poetischer Störtext</option>
+                <option>Kaltes Regieprotokoll</option>
+              </select></label>
+            </div>
             <div class="question-block">
-              <label for="blockText">Text / Regie / Kommentar</label>
-              <textarea id="blockText" data-field="block_text" placeholder="Schreibe den neuen Text, die Regieanweisung oder das Overlay."></textarea>
+              <label for="blockText">Rohmaterial / eigene Zusätze</label>
+              <textarea id="blockText" data-field="block_text" placeholder="Schreibe Rohmaterial, Motive, Regieideen oder nimm links ein Originalfragment als Grundlage."></textarea>
             </div>
             <div class="question-block">
               <label for="blockVideo">Video-URL oder Dateiname</label>
               <input id="blockVideo" type="text" data-field="block_video" placeholder="https://... oder assets/video/datei.mp4">
             </div>
             <div class="button-row">
-              <button type="button" class="primary-button" data-action="add-custom-block">Material in Fassung einfügen</button>
+              <button type="button" class="primary-button" data-action="generate-preview">Preview generieren</button>
+              <button type="button" class="ghost-button" data-action="source-to-preview">Original als Preview laden</button>
               <button type="button" class="ghost-button" data-action="hack-to-montage">Letzten Hack montieren</button>
+            </div>
+            <div class="preview-editor">
+              <div class="screen-label">Bearbeitbare Preview</div>
+              <textarea id="previewText" data-preview-text placeholder="Hier erscheint die generierte Fassung. Danach händisch schärfen."></textarea>
+              <div id="styleReport" class="style-report" aria-live="polite"></div>
+              <div class="button-row">
+                <button type="button" class="primary-button" data-action="add-preview-block">Preview in Fassung übernehmen</button>
+                <button type="button" class="ghost-button" data-action="restyle-preview">Stil erneut anwenden</button>
+              </div>
             </div>
           </article>
         </div>

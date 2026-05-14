@@ -777,6 +777,39 @@ input[type="range"] {
   margin: 10px 0;
 }
 
+.preview-editor {
+  border: 2px solid var(--blue);
+  background: #05070d;
+  padding: 14px;
+  margin-top: 14px;
+}
+
+.preview-editor textarea {
+  min-height: 300px;
+  font-family: "Courier New", monospace;
+  color: var(--yellow);
+}
+
+.style-report {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.style-report strong,
+.style-report span {
+  border: 2px solid var(--line);
+  background: #111827;
+  padding: 6px 8px;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.style-report strong {
+  color: var(--green);
+}
+
 .topbar h1,
 .hero-panel h2 {
   text-shadow: 3px 0 rgba(255, 51, 92, 0.6), -3px 0 rgba(57, 199, 255, 0.42);

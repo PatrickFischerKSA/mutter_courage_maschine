@@ -1,4 +1,4 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v6";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v7";
 const sourceCorpus = window.COURAGE_TEXT || [];
 
 const pdfs = {
@@ -306,6 +306,7 @@ function freshState() {
     hacks: [],
     selectedSourceId: null,
     montage: [],
+    previewText: "",
     completed: {},
     conceptNotes: {},
     generatedConcept: ""
@@ -390,6 +391,9 @@ function hydrate() {
   if (generated) generated.textContent = state.generatedConcept || "Noch kein Regiekonzept generiert.";
   const hackOutput = document.getElementById("hackOutput");
   if (hackOutput) hackOutput.textContent = state.fields.hack_output || "Noch kein Eingriff. Der Text wartet auf Beschädigung.";
+  const preview = document.getElementById("previewText");
+  if (preview) preview.value = state.previewText || "";
+  renderStyleReport();
   renderHackArchive();
   renderSourceReader();
   renderMontage();
@@ -572,6 +576,149 @@ function hackToMontage() {
     source: state.fields.hack_input ? "Hack-Labor" : "Hack-Labor / ohne Original",
     text
   });
+}
+
+function sourceToPreview() {
+  const selected = getSelectedSource();
+  if (!selected) return;
+  state.previewText = selected.text.slice(0, 2200);
+  const preview = document.getElementById("previewText");
+  if (preview) preview.value = state.previewText;
+  saveState();
+  renderStyleReport();
+}
+
+function generatePreview() {
+  const selected = getSelectedSource();
+  const raw = [
+    state.fields.block_text || "",
+    state.fields.block_text ? "" : (selected ? selected.text.slice(0, 1200) : "")
+  ].join("\n").trim() || "Mutter Courage zieht weiter. Der Krieg läuft. Das Geschäft spricht leise mit.";
+  const decisionPatch = applyDecisionFrame(raw);
+  const styled = applyStyleProfile(decisionPatch, state.fields.style_profile || "Brechtischer Duktus");
+  state.previewText = styled;
+  const preview = document.getElementById("previewText");
+  if (preview) preview.value = styled;
+  saveState();
+  renderStyleReport();
+}
+
+function applyDecisionFrame(text) {
+  const target = state.fields.decision_target || "Mitleid sabotieren";
+  const medium = state.fields.decision_medium || "Livestream";
+  const audience = state.fields.decision_audience || "Es soll sich ertappt fühlen";
+  const frames = {
+    "Mitleid sabotieren": "Das Publikum darf sich nicht im warmen Gefühl einrichten. Jede Rührung bekommt ein Preisschild.",
+    "Krieg als Geschäft sichtbar machen": "Der Vorgang wird als Handel gezeigt: Ware, Körper, Risiko, Gewinn, Verlust.",
+    "Figur entpsychologisieren": "Nicht: Was fühlt diese Figur? Sondern: Welche Funktion erfüllt sie im System?",
+    "Gegenwart einschneiden": "Ein heutiges Interface schneidet in die Szene und macht klar: Das ist nicht vorbei.",
+    "Publikum anklagen": "Die Zuschauerposition wird selbst verdächtig. Zuschauen ist nicht unschuldig.",
+    "Song als Störung bauen": "Der Text darf nicht fließen. Er muss singen, stoppen, widersprechen."
+  };
+  return [
+    `[ENTSCHEIDUNG: ${target}] ${frames[target] || frames["Mitleid sabotieren"]}`,
+    `[MEDIUM: ${medium}]`,
+    `[PUBLIKUM: ${audience}]`,
+    "",
+    text
+  ].join("\n");
+}
+
+function applyStyleProfile(text, profile) {
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  const sentences = splitSentences(cleaned);
+  if (profile === "Brechtischer Duktus") {
+    return brechtify(sentences);
+  }
+  if (profile === "Nachrichten-Ticker") {
+    return sentences.map((s, i) => `EILMELDUNG ${String(i + 1).padStart(2, "0")}: ${s}`).join("\n");
+  }
+  if (profile === "Social-Feed") {
+    return sentences.map((s, i) => `${i % 2 ? "Kommentar" : "Post"}: ${s}\nReaktion: Mitleid reicht nicht. Teilen ersetzt kein Urteil.`).join("\n\n");
+  }
+  if (profile === "Game-Interface") {
+    return sentences.map((s, i) => `QUEST-LOG ${i + 1}: ${s}\nSTATUS: Profit +1 / Verlust +1 / Erkenntnis ungesichert`).join("\n\n");
+  }
+  if (profile === "Behördenprotokoll") {
+    return sentences.map((s, i) => `Punkt ${i + 1}: ${s}\nVermerk: Verantwortung wird an die Lage delegiert.`).join("\n");
+  }
+  if (profile === "Poetischer Störtext") {
+    return sentences.map((s) => `${s}\nDarunter: Wagenräder. Darüber: Reklame. Dazwischen zählt jemand die Toten.`).join("\n\n");
+  }
+  if (profile === "Kaltes Regieprotokoll") {
+    return sentences.map((s) => `Keine Musik. Kein Close-up. Text sichtbar: ${s}`).join("\n");
+  }
+  return text;
+}
+
+function splitSentences(text) {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+}
+
+function brechtify(sentences) {
+  return sentences.map((sentence, index) => {
+    const prefix = index % 3 === 0 ? "Man zeige:" : index % 3 === 1 ? "Da sieht man:" : "Und es frage sich:";
+    const colder = sentence
+      .replace(/\bich\b/gi, "man")
+      .replace(/\bwir\b/gi, "die Leute")
+      .replace(/\bfühle\b/gi, "rechne")
+      .replace(/\bLiebe\b/g, "Ware Liebe")
+      .replace(/\bKrieg\b/g, "Krieg, dieses Geschäft,");
+    return `${prefix} ${colder}`;
+  }).join("\n");
+}
+
+function restylePreview() {
+  const base = state.previewText || state.fields.block_text || "";
+  if (!base.trim()) return generatePreview();
+  state.previewText = applyStyleProfile(base, state.fields.style_profile || "Brechtischer Duktus");
+  const preview = document.getElementById("previewText");
+  if (preview) preview.value = state.previewText;
+  saveState();
+  renderStyleReport();
+}
+
+function addPreviewBlock() {
+  const text = state.previewText || document.getElementById("previewText")?.value || "";
+  if (!text.trim()) return;
+  addMontageBlock({
+    type: state.fields.block_type || "Neuer Szenentext",
+    title: state.fields.block_title || `Preview: ${state.fields.style_profile || "Stilprofil"}`,
+    text,
+    video: state.fields.block_video || "",
+    source: `Preview-Generator / ${state.fields.style_profile || "ohne Stilprofil"}`
+  });
+}
+
+function renderStyleReport() {
+  const report = document.getElementById("styleReport");
+  if (!report) return;
+  const text = state.previewText || "";
+  const metrics = styleMetrics(text);
+  report.innerHTML = `
+    <strong>Stilreport</strong>
+    <span>Sätze: ${metrics.sentences}</span>
+    <span>Ø Wörter/Satz: ${metrics.avgWords}</span>
+    <span>Imperative/Zeige-Signale: ${metrics.showSignals}</span>
+    <span>Ökonomie-Wörter: ${metrics.economyWords}</span>
+  `;
+}
+
+function styleMetrics(text) {
+  const sentences = splitSentences(text);
+  const words = text.match(/\b[\p{L}\p{N}-]+\b/gu) || [];
+  const showSignals = (text.match(/\b(zeige|sieht|frage|vermerk|status|meldung|keine musik|kein close-up)\b/gi) || []).length;
+  const economyWords = (text.match(/\b(krieg|geschäft|preis|ware|profit|verlust|markt|geld|körper|verkauft)\b/gi) || []).length;
+  return {
+    sentences: sentences.length,
+    avgWords: sentences.length ? Math.round(words.length / sentences.length) : 0,
+    showSignals,
+    economyWords
+  };
 }
 
 function addCustomBlock() {
@@ -913,6 +1060,11 @@ function bindEvents() {
       state.conceptNotes[target.dataset.concept] = target.value;
       saveState();
     }
+    if (target.matches("[data-preview-text]")) {
+      state.previewText = target.value;
+      saveState();
+      renderStyleReport();
+    }
   });
 
   document.addEventListener("change", (event) => {
@@ -943,8 +1095,12 @@ function bindEvents() {
     if (target.dataset.hack) runHack(target.dataset.hack);
     if (target.dataset.action === "source-to-hack") sourceToHack();
     if (target.dataset.action === "source-to-montage") sourceToMontage();
+    if (target.dataset.action === "source-to-preview") sourceToPreview();
     if (target.dataset.action === "hack-to-montage") hackToMontage();
     if (target.dataset.action === "add-custom-block") addCustomBlock();
+    if (target.dataset.action === "generate-preview") generatePreview();
+    if (target.dataset.action === "restyle-preview") restylePreview();
+    if (target.dataset.action === "add-preview-block") addPreviewBlock();
     if (target.dataset.action === "move-block-up") moveBlock(target.dataset.blockId, -1);
     if (target.dataset.action === "move-block-down") moveBlock(target.dataset.blockId, 1);
     if (target.dataset.action === "delete-block") deleteBlock(target.dataset.blockId);
