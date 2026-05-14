@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Du sollst nicht weinen, du sollst denken</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Zum Arbeitsbereich springen</a>
+
+    <header class="topbar">
+      <div>
+        <p class="machine-label">Digitale Brecht-Maschine</p>
+        <h1>Du sollst nicht weinen, du sollst denken</h1>
+        <p class="subtitle">Lesen, mitgehen, gestört werden, urteilen, inszenieren.</p>
+      </div>
+      <div class="top-actions" aria-label="Globale Aktionen">
+        <button class="ghost-button" type="button" data-action="open-reader">Text öffnen</button>
+        <button class="primary-button" type="button" data-action="start-machine">Brecht-Maschine starten</button>
+      </div>
+    </header>
+
+    <aside class="side-rail" aria-label="Modulnavigation">
+      <div class="rail-title">Schaltpult</div>
+      <nav id="moduleNav" class="module-nav"></nav>
+      <div class="rail-status">
+        <span id="savedStatus">Nicht gespeichert</span>
+        <button type="button" class="tiny-button" data-action="export-json">JSON</button>
+        <button type="button" class="tiny-button" data-action="export-txt">TXT</button>
+      </div>
+    </aside>
+
+    <main id="main" class="workspace">
+      <section id="start" class="hero-panel machine-section active-section" aria-labelledby="startTitle">
+        <div class="projection-strip">VERSUCHSANORDNUNG / NICHT EINFÜHLUNGSTRAINING</div>
+        <h2 id="startTitle">Eine digitale Lernlandschaft zu Brechts <span>Mutter Courage und ihre Kinder</span></h2>
+        <p>
+          Diese Lernlandschaft behandelt <em>Mutter Courage und ihre Kinder</em> nicht als geschlossene Geschichte,
+          sondern als Versuchsanordnung. Der Text wird gelesen, unterbrochen, befragt und neu inszeniert.
+        </p>
+        <p class="hard-note">Deine Aufgabe ist nicht, Mutter Courage einfach zu verstehen. Deine Aufgabe ist, zu beobachten, wie du sie verstehst.</p>
+        <div class="hero-actions">
+          <button class="ghost-button large" type="button" data-action="open-reader">Text öffnen</button>
+          <button class="primary-button large" type="button" data-action="start-machine">Brecht-Maschine starten</button>
+        </div>
+      </section>
+
+      <section id="reader" class="machine-section" aria-labelledby="readerTitle">
+        <div class="section-kicker">Materialpult</div>
+        <h2 id="readerTitle">PDFs: Text und Organon</h2>
+        <p class="section-lead">
+          Die PDF-Seiten sind als Platzhalter verlinkt. Die Werte hinter <code>#page=</code> können später exakt auf die Schulausgabe angepasst werden.
+        </p>
+        <div class="pdf-grid">
+          <article class="pdf-card">
+            <h3>Mutter Courage und ihre Kinder</h3>
+            <p>Primärtext. Szenen lesen, Stellen suchen, Wirkungen prüfen.</p>
+            <a class="text-link" href="assets/docs/Mutter Courage und ihre Kinder.pdf" target="_blank" rel="noopener">PDF in neuem Tab öffnen</a>
+            <object data="assets/docs/Mutter Courage und ihre Kinder.pdf#page=1" type="application/pdf">
+              <p>PDF kann nicht eingebettet werden. <a href="assets/docs/Mutter Courage und ihre Kinder.pdf">Hier öffnen</a>.</p>
+            </object>
+          </article>
+          <article class="pdf-card">
+            <h3>Kleines Organon für das Theater</h3>
+            <p>Methodische Grundlage: Verfremdung, Zeigen, historisierendes Denken, kritisches Zuschauen.</p>
+            <a class="text-link" href="assets/docs/707359155-Kleines-Organon-fur-das-Theater-Bertolt-Brecht.pdf" target="_blank" rel="noopener">PDF in neuem Tab öffnen</a>
+            <object data="assets/docs/707359155-Kleines-Organon-fur-das-Theater-Bertolt-Brecht.pdf#page=1" type="application/pdf">
+              <p>PDF kann nicht eingebettet werden. <a href="assets/docs/707359155-Kleines-Organon-fur-das-Theater-Bertolt-Brecht.pdf">Hier öffnen</a>.</p>
+            </object>
+          </article>
+        </div>
+      </section>
+
+      <div id="moduleMount"></div>
+
+      <section id="machine" class="machine-section" aria-labelledby="machineTitle">
+        <div class="section-kicker">Modul 9</div>
+        <h2 id="machineTitle">Die digitale Brecht-Maschine</h2>
+        <p class="section-lead">Hier erscheint nicht eine Note. Hier erscheint dein Denkprotokoll: Affekt, Störung, Urteil, Analyse, Regie.</p>
+        <div id="summaryMount" class="summary-wall"></div>
+        <div class="question-block">
+          <label for="final1">Wo bist du beim Lesen in den Plot hineingezogen worden?</label>
+          <textarea id="final1" data-field="final_plot"></textarea>
+        </div>
+        <div class="question-block">
+          <label for="final2">Welche digitale Störung hat dich am stärksten zum Nachdenken gebracht?</label>
+          <textarea id="final2" data-field="final_disturbance"></textarea>
+        </div>
+        <div class="question-block">
+          <label for="final3">Was hast du zuerst übersehen, weil du der Handlung gefolgt bist?</label>
+          <textarea id="final3" data-field="final_blindspot"></textarea>
+        </div>
+        <div class="question-block">
+          <label for="final4">Was bedeutet kritisches Zuschauen nach dieser Arbeit?</label>
+          <textarea id="final4" data-field="final_critical_viewing"></textarea>
+        </div>
+        <div class="question-block">
+          <label for="final5">Wie verändert sich dein Verständnis von Mutter Courage?</label>
+          <textarea id="final5" data-field="final_courage_understanding"></textarea>
+        </div>
+        <div class="question-block">
+          <label for="final6">Warum wäre blosses Mitleid für Brecht zu wenig?</label>
+          <textarea id="final6" data-field="final_pity"></textarea>
+        </div>
+        <div class="button-row">
+          <button type="button" class="primary-button" data-action="export-txt">Antworten als TXT exportieren</button>
+          <button type="button" class="ghost-button" data-action="export-json">Antworten als JSON exportieren</button>
+        </div>
+      </section>
+
+      <section id="teacher" class="machine-section teacher-section" aria-labelledby="teacherTitle">
+        <div class="section-kicker">Lehrerbereich</div>
+        <h2 id="teacherTitle">Lokale Antworten sichtbar machen</h2>
+        <p class="section-lead">
+          Dieser Bereich zeigt alle Antworten, die in diesem Browser gespeichert sind. Auf GitHub Pages gibt es keinen zentralen Server.
+        </p>
+        <div class="button-row">
+          <button type="button" class="ghost-button" data-action="refresh-teacher">Aktualisieren</button>
+          <button type="button" class="warning-button" data-action="reset-all">Alles lokal zurücksetzen</button>
+        </div>
+        <pre id="teacherOutput" class="teacher-output" aria-live="polite"></pre>
+      </section>
+    </main>
+
+    <dialog id="interruptDialog" class="interrupt-dialog">
+      <form method="dialog">
+        <p class="stop-sign">STOPP</p>
+        <h2>Die Illusion wird unterbrochen.</h2>
+        <p id="interruptText">Nicht weiterfühlen. Erst beobachten, wodurch das Gefühl hergestellt wurde.</p>
+        <button class="primary-button" value="ok">Weiterarbeiten</button>
+      </form>
+    </dialog>
+
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
