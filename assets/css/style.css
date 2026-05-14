@@ -810,6 +810,73 @@ input[type="range"] {
   color: var(--green);
 }
 
+.stylometry-panel {
+  border: 3px solid var(--blue);
+  background: #07101c;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.stylometry-output {
+  margin-top: 12px;
+}
+
+.stylometry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.stylometry-card {
+  border: 2px solid var(--line);
+  background: #101522;
+  padding: 12px;
+}
+
+.stylometry-card.wide {
+  grid-column: 1 / -1;
+}
+
+.stylometry-card h4 {
+  margin: 0 0 8px;
+  color: var(--yellow);
+  text-transform: uppercase;
+}
+
+.stylometry-card p {
+  margin: 6px 0;
+}
+
+.mini-list {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.kwic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.kwic-table td,
+.kwic-table th {
+  border: 1px solid rgba(244, 240, 223, 0.45);
+  padding: 5px;
+  vertical-align: top;
+}
+
+.kwic-table th {
+  color: var(--red);
+  background: #05070d;
+}
+
 .topbar h1,
 .hero-panel h2 {
   text-shadow: 3px 0 rgba(255, 51, 92, 0.6), -3px 0 rgba(57, 199, 255, 0.42);

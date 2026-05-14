@@ -1,5 +1,6 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v7";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v8";
 const sourceCorpus = window.COURAGE_TEXT || [];
+const stopwords = new Set("der die das den dem des ein eine einer einem einen und oder aber doch nur auch zu in im am an auf mit von für als ist sind war waren wird werden es er sie wir ihr ich man nicht kein keine so da wo wie was wenn dann".split(" "));
 
 const pdfs = {
   courage: "assets/docs/Mutter Courage und ihre Kinder.pdf",
@@ -397,6 +398,7 @@ function hydrate() {
   renderHackArchive();
   renderSourceReader();
   renderMontage();
+  renderStylometry();
   renderSliderTimeline();
   renderSummary();
   renderTeacher();
@@ -531,6 +533,7 @@ function selectSource(id) {
   state.selectedSourceId = id;
   saveState();
   renderSourceReader(document.querySelector("[data-source-search]")?.value || "");
+  renderStylometry();
 }
 
 function sourceToHack() {
@@ -586,6 +589,7 @@ function sourceToPreview() {
   if (preview) preview.value = state.previewText;
   saveState();
   renderStyleReport();
+  renderStylometry();
 }
 
 function generatePreview() {
@@ -601,6 +605,7 @@ function generatePreview() {
   if (preview) preview.value = styled;
   saveState();
   renderStyleReport();
+  renderStylometry();
 }
 
 function applyDecisionFrame(text) {
@@ -680,6 +685,7 @@ function restylePreview() {
   if (preview) preview.value = state.previewText;
   saveState();
   renderStyleReport();
+  renderStylometry();
 }
 
 function addPreviewBlock() {
@@ -719,6 +725,184 @@ function styleMetrics(text) {
     showSignals,
     economyWords
   };
+}
+
+function stylometryTextPair() {
+  const selected = getSelectedSource();
+  return {
+    original: selected ? selected.text : "",
+    preview: state.previewText || state.fields.block_text || ""
+  };
+}
+
+function tokenize(text) {
+  return (text.toLowerCase().match(/[\p{L}\p{N}äöüß-]+/gu) || [])
+    .map((token) => token.replace(/^-+|-+$/g, ""))
+    .filter(Boolean);
+}
+
+function normalizeLemma(token) {
+  let t = token.toLowerCase();
+  const map = {
+    kriege: "krieg",
+    kriegen: "krieg",
+    krieges: "krieg",
+    geschäfte: "geschäft",
+    geschäften: "geschäft",
+    geschäftes: "geschäft",
+    kinder: "kind",
+    kindern: "kind",
+    leute: "leut",
+    menschen: "mensch",
+    verkauft: "verkaufen",
+    verkaufen: "verkaufen",
+    verkaufte: "verkaufen",
+    verkauftes: "verkaufen"
+  };
+  if (map[t]) return map[t];
+  t = t.replace(/(innen|ungen|heiten|keiten)$/u, "");
+  t = t.replace(/(ern|en|er|es|e|s)$/u, "");
+  return t || token.toLowerCase();
+}
+
+function analyzeStylometry(text) {
+  const tokens = tokenize(text);
+  const lemmas = tokens.map(normalizeLemma);
+  const contentLemmas = lemmas.filter((lemma) => !stopwords.has(lemma) && lemma.length > 2);
+  const sentences = splitSentences(text);
+  const types = new Set(lemmas);
+  return {
+    tokens,
+    lemmas,
+    contentLemmas,
+    sentences,
+    tokenCount: tokens.length,
+    typeCount: types.size,
+    ttr: tokens.length ? Number((types.size / tokens.length).toFixed(3)) : 0,
+    avgSentence: sentences.length ? Math.round(tokens.length / sentences.length) : 0,
+    topLemmas: topCounts(contentLemmas, 8)
+  };
+}
+
+function topCounts(items, limit = 10) {
+  const counts = new Map();
+  items.forEach((item) => counts.set(item, (counts.get(item) || 0) + 1));
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit);
+}
+
+function ngrams(tokens, size) {
+  const grams = [];
+  for (let i = 0; i <= tokens.length - size; i += 1) {
+    grams.push(tokens.slice(i, i + size).join(" "));
+  }
+  return topCounts(grams, 8).filter(([, count]) => count > 1);
+}
+
+function kwic(text, probe) {
+  const tokens = tokenize(text);
+  const lemma = normalizeLemma(probe || "");
+  const rows = [];
+  tokens.forEach((token, index) => {
+    if (normalizeLemma(token) !== lemma) return;
+    rows.push({
+      left: tokens.slice(Math.max(0, index - 6), index).join(" "),
+      hit: token,
+      right: tokens.slice(index + 1, index + 7).join(" ")
+    });
+  });
+  return rows.slice(0, 8);
+}
+
+function collocates(text, probe) {
+  const tokens = tokenize(text);
+  const lemma = normalizeLemma(probe || "");
+  const around = [];
+  tokens.forEach((token, index) => {
+    if (normalizeLemma(token) !== lemma) return;
+    tokens.slice(Math.max(0, index - 5), index).concat(tokens.slice(index + 1, index + 6))
+      .map(normalizeLemma)
+      .filter((item) => item.length > 2 && !stopwords.has(item))
+      .forEach((item) => around.push(item));
+  });
+  return topCounts(around, 8);
+}
+
+function compareAnalyses(original, preview) {
+  return {
+    tokenDelta: preview.tokenCount - original.tokenCount,
+    sentenceDelta: preview.avgSentence - original.avgSentence,
+    ttrDelta: Number((preview.ttr - original.ttr).toFixed(3)),
+    sharedTop: original.topLemmas
+      .map(([lemma]) => lemma)
+      .filter((lemma) => preview.topLemmas.some(([other]) => other === lemma))
+      .slice(0, 6)
+  };
+}
+
+function renderStylometry() {
+  const out = document.getElementById("stylometryOutput");
+  if (!out) return;
+  const { original, preview } = stylometryTextPair();
+  const originalAnalysis = analyzeStylometry(original);
+  const previewAnalysis = analyzeStylometry(preview);
+  const comparison = compareAnalyses(originalAnalysis, previewAnalysis);
+  const probe = state.fields.lemma_probe || "krieg";
+  const size = Number(state.fields.ngram_size || 3);
+  out.innerHTML = `
+    <div class="stylometry-grid">
+      ${stylometryCard("Originalfragment", originalAnalysis)}
+      ${stylometryCard("Preview", previewAnalysis)}
+      <article class="stylometry-card">
+        <h4>Vergleich</h4>
+        <p>Token-Differenz: <strong>${comparison.tokenDelta}</strong></p>
+        <p>Satzlängen-Differenz: <strong>${comparison.sentenceDelta}</strong></p>
+        <p>TTR-Differenz: <strong>${comparison.ttrDelta}</strong></p>
+        <p>Geteilte Leit-Lemmata: ${comparison.sharedTop.map(escapeHtml).join(", ") || "keine"}</p>
+      </article>
+      <article class="stylometry-card">
+        <h4>KWIC / Kollokation: ${escapeHtml(normalizeLemma(probe))}</h4>
+        ${kwicTable(preview || original, probe)}
+        <p class="mini-list">${collocates(preview || original, probe).map(([word, count]) => `${escapeHtml(word)} (${count})`).join(" / ") || "keine Kollokationen"}</p>
+      </article>
+      <article class="stylometry-card wide">
+        <h4>Wiederkehrende ${size}-Gramme in der Preview</h4>
+        <p class="mini-list">${ngrams(previewAnalysis.tokens, size).map(([gram, count]) => `${escapeHtml(gram)} (${count})`).join(" / ") || "keine Wiederholungen über Schwelle"}</p>
+      </article>
+    </div>
+  `;
+}
+
+function stylometryCard(title, analysis) {
+  return `
+    <article class="stylometry-card">
+      <h4>${title}</h4>
+      <p>Tokens: <strong>${analysis.tokenCount}</strong></p>
+      <p>Types: <strong>${analysis.typeCount}</strong></p>
+      <p>Type-Token-Ratio: <strong>${analysis.ttr}</strong></p>
+      <p>Ø Satzlänge: <strong>${analysis.avgSentence}</strong></p>
+      <p class="mini-list">${analysis.topLemmas.map(([lemma, count]) => `${escapeHtml(lemma)} (${count})`).join(" / ") || "keine Daten"}</p>
+    </article>
+  `;
+}
+
+function kwicTable(text, probe) {
+  const rows = kwic(text, probe);
+  if (!rows.length) return `<p>Keine KWIC-Treffer.</p>`;
+  return `
+    <table class="kwic-table">
+      <tbody>
+        ${rows.map((row) => `
+          <tr>
+            <td>${escapeHtml(row.left)}</td>
+            <th>${escapeHtml(row.hit)}</th>
+            <td>${escapeHtml(row.right)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
 
 function addCustomBlock() {
@@ -1064,6 +1248,7 @@ function bindEvents() {
       state.previewText = target.value;
       saveState();
       renderStyleReport();
+      renderStylometry();
     }
   });
 
@@ -1101,6 +1286,7 @@ function bindEvents() {
     if (target.dataset.action === "generate-preview") generatePreview();
     if (target.dataset.action === "restyle-preview") restylePreview();
     if (target.dataset.action === "add-preview-block") addPreviewBlock();
+    if (target.dataset.action === "run-stylometry") renderStylometry();
     if (target.dataset.action === "move-block-up") moveBlock(target.dataset.blockId, -1);
     if (target.dataset.action === "move-block-down") moveBlock(target.dataset.blockId, 1);
     if (target.dataset.action === "delete-block") deleteBlock(target.dataset.blockId);

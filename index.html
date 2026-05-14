@@ -172,6 +172,29 @@
           </article>
         </div>
 
+        <article class="stylometry-panel">
+          <div class="panel-heading">
+            <div>
+              <h3>Stilometrie-Labor nach Anna-Liza / DILAiTS</h3>
+              <p class="section-lead">Teilweise eingebaut nach der Ressource von Bubenhofer/Peric: Statistik, normalisierte Suchwörter, KWIC, Kollokationen, n-Gramme und Vergleich von Original und Preview.</p>
+            </div>
+            <a class="text-link" href="https://patrickfischerksa.github.io/dilaits_Bubenhofer_Peric_angepasst_FiP/" target="_blank" rel="noopener">Ressource öffnen</a>
+          </div>
+          <div class="form-grid two-column">
+            <label class="question-block" for="lemmaProbe">Lemma-/Suchwort prüfen<input id="lemmaProbe" type="text" data-field="lemma_probe" placeholder="z.B. Krieg, Geschäft, Courage"></label>
+            <label class="question-block" for="ngramSize">n-Gramm-Länge<select id="ngramSize" data-field="ngram_size">
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+              <option>6</option>
+            </select></label>
+          </div>
+          <div class="button-row">
+            <button type="button" class="primary-button" data-action="run-stylometry">Stilometrie aktualisieren</button>
+          </div>
+          <div id="stylometryOutput" class="stylometry-output" aria-live="polite"></div>
+        </article>
+
         <article class="renovation-panel">
           <h3>Renovierte Courage-Fassung</h3>
           <div id="montageList" class="montage-list" aria-live="polite"></div>
