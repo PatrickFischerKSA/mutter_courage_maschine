@@ -83,29 +83,39 @@
           Der PDF-Text ist als dynamischer Korpus ausgelesen. Suche eine Stelle, übernimm sie als Material,
           kombiniere sie mit Hacks, neuen Texten und Video-Verweisen. Am Ende exportierst du daraus eine neue Courage-Fassung.
         </p>
+        <div class="flow-strip" aria-label="Arbeitsablauf">
+          <span>1 Quelle wählen</span>
+          <span>2 Wirkung entscheiden</span>
+          <span>3 Preview schärfen</span>
+          <span>4 In Fassung übernehmen</span>
+          <span>5 Exportieren</span>
+        </div>
 
         <div class="dramaturgy-grid">
-          <article class="source-panel">
-            <h3>Source Reader</h3>
-            <label class="question-block" for="sourceSearch">Originaltext durchsuchen</label>
+          <article class="source-panel step-panel">
+            <div class="step-badge">1</div>
+            <h3>Quelle wählen</h3>
+            <label class="question-block compact-field" for="sourceSearch">Originaltext durchsuchen</label>
             <input id="sourceSearch" type="text" placeholder="z.B. Krieg, Courage, Kattrin, Geschäft, Frieden" data-source-search>
             <div id="sourceResults" class="source-results" aria-live="polite"></div>
             <div class="source-preview">
               <div class="screen-label">Ausgewähltes Fragment</div>
               <pre id="sourcePreview">Noch kein Fragment gewählt.</pre>
               <div class="button-row">
-                <button type="button" class="primary-button" data-action="source-to-hack">In Hack-Labor übernehmen</button>
-                <button type="button" class="ghost-button" data-action="source-to-montage">Als Originalblock montieren</button>
+                <button type="button" class="primary-button" data-action="source-to-preview">Mit dieser Quelle weiterarbeiten</button>
+                <button type="button" class="ghost-button" data-action="source-to-montage">Unbearbeitet montieren</button>
+                <button type="button" class="ghost-button" data-action="source-to-hack">Ins Hack-Labor</button>
               </div>
             </div>
           </article>
 
-          <article class="composer-panel">
-            <h3>Generator und Preview</h3>
-            <p class="section-lead">Beantworte die Entscheidungsfragen, wähle einen Stil und generiere eine bearbeitbare Preview. Erst wenn sie sitzt, wandert sie in die Fassung.</p>
+          <article class="composer-panel step-panel">
+            <div class="step-badge">2</div>
+            <h3>Wirkung und Stil setzen</h3>
+            <p class="section-lead">Vier Entscheidungen reichen für den ersten Entwurf. Danach kannst du die Preview direkt überschreiben.</p>
             <div class="form-grid two-column">
-              <label class="question-block" for="blockTitle">Blocktitel<input id="blockTitle" type="text" data-field="block_title" placeholder="z.B. Drohnen-Feed, Kattrin-Alarm, Courage-Shop"></label>
-              <label class="question-block" for="blockType">Typ<select id="blockType" data-field="block_type">
+              <label class="question-block compact-field" for="blockTitle">Blocktitel<input id="blockTitle" type="text" data-field="block_title" placeholder="z.B. Drohnen-Feed, Kattrin-Alarm, Courage-Shop"></label>
+              <label class="question-block compact-field" for="blockType">Typ<select id="blockType" data-field="block_type">
                 <option>Neuer Szenentext</option>
                 <option>Regieanweisung</option>
                 <option>Video-Verweis</option>
@@ -114,7 +124,7 @@
               </select></label>
             </div>
             <div class="form-grid two-column">
-              <label class="question-block" for="decisionTarget">Was soll der Eingriff leisten?<select id="decisionTarget" data-field="decision_target">
+              <label class="question-block compact-field" for="decisionTarget">Eingriffsziel<select id="decisionTarget" data-field="decision_target">
                 <option>Mitleid sabotieren</option>
                 <option>Krieg als Geschäft sichtbar machen</option>
                 <option>Figur entpsychologisieren</option>
@@ -122,7 +132,7 @@
                 <option>Publikum anklagen</option>
                 <option>Song als Störung bauen</option>
               </select></label>
-              <label class="question-block" for="decisionMedium">Welches heutige Medium infiziert die Szene?<select id="decisionMedium" data-field="decision_medium">
+              <label class="question-block compact-field" for="decisionMedium">Medium<select id="decisionMedium" data-field="decision_medium">
                 <option>Livestream</option>
                 <option>Kommentarspalte</option>
                 <option>Shopping-Interface</option>
@@ -130,14 +140,14 @@
                 <option>Game-HUD</option>
                 <option>Behördenformular</option>
               </select></label>
-              <label class="question-block" for="decisionAudience">Was soll mit dem Publikum passieren?<select id="decisionAudience" data-field="decision_audience">
+              <label class="question-block compact-field" for="decisionAudience">Publikumseffekt<select id="decisionAudience" data-field="decision_audience">
                 <option>Es soll sich ertappt fühlen</option>
                 <option>Es soll Distanz gewinnen</option>
                 <option>Es soll ökonomisch mitgerechnet werden</option>
                 <option>Es soll keine Erlösung bekommen</option>
                 <option>Es soll in Verantwortung geraten</option>
               </select></label>
-              <label class="question-block" for="styleProfile">Sprachmodus<select id="styleProfile" data-field="style_profile">
+              <label class="question-block compact-field" for="styleProfile">Sprachmodus<select id="styleProfile" data-field="style_profile">
                 <option>Brechtischer Duktus</option>
                 <option>Nachrichten-Ticker</option>
                 <option>Social-Feed</option>
@@ -147,56 +157,52 @@
                 <option>Kaltes Regieprotokoll</option>
               </select></label>
             </div>
-            <div class="question-block">
+            <div class="question-block compact-field">
               <label for="blockText">Rohmaterial / eigene Zusätze</label>
               <textarea id="blockText" data-field="block_text" placeholder="Schreibe Rohmaterial, Motive, Regieideen oder nimm links ein Originalfragment als Grundlage."></textarea>
             </div>
-            <div class="question-block">
+            <div class="question-block compact-field">
               <label for="blockVideo">Video-URL oder Dateiname</label>
               <input id="blockVideo" type="text" data-field="block_video" placeholder="https://... oder assets/video/datei.mp4">
             </div>
             <div class="button-row">
-              <button type="button" class="primary-button" data-action="generate-preview">Preview generieren</button>
-              <button type="button" class="ghost-button" data-action="source-to-preview">Original als Preview laden</button>
+              <button type="button" class="primary-button large-action" data-action="generate-preview">Preview bauen</button>
               <button type="button" class="ghost-button" data-action="hack-to-montage">Letzten Hack montieren</button>
             </div>
             <div class="preview-editor">
-              <div class="screen-label">Bearbeitbare Preview</div>
+              <div class="screen-label">3 Bearbeitbare Preview</div>
               <textarea id="previewText" data-preview-text placeholder="Hier erscheint die generierte Fassung. Danach händisch schärfen."></textarea>
               <div id="styleReport" class="style-report" aria-live="polite"></div>
               <div class="button-row">
-                <button type="button" class="primary-button" data-action="add-preview-block">Preview in Fassung übernehmen</button>
+                <button type="button" class="primary-button large-action" data-action="add-preview-block">4 In Fassung übernehmen</button>
                 <button type="button" class="ghost-button" data-action="restyle-preview">Stil erneut anwenden</button>
               </div>
             </div>
           </article>
         </div>
 
-        <article class="stylometry-panel">
+        <details class="stylometry-panel">
+          <summary>Optionale Detailanalyse: Stilometrie nach Anna-Liza / DILAiTS</summary>
           <div class="panel-heading">
-            <div>
-              <h3>Stilometrie-Labor nach Anna-Liza / DILAiTS</h3>
-              <p class="section-lead">Teilweise eingebaut nach der Ressource von Bubenhofer/Peric: Statistik, normalisierte Suchwörter, KWIC, Kollokationen, n-Gramme und Vergleich von Original und Preview.</p>
-            </div>
+            <p class="section-lead">Statistik, normalisierte Suchwörter, KWIC, Kollokationen, n-Gramme und Vergleich von Original und Preview.</p>
             <a class="text-link" href="https://patrickfischerksa.github.io/dilaits_Bubenhofer_Peric_angepasst_FiP/" target="_blank" rel="noopener">Ressource öffnen</a>
           </div>
           <div class="form-grid two-column">
-            <label class="question-block" for="lemmaProbe">Lemma-/Suchwort prüfen<input id="lemmaProbe" type="text" data-field="lemma_probe" placeholder="z.B. Krieg, Geschäft, Courage"></label>
-            <label class="question-block" for="ngramSize">n-Gramm-Länge<select id="ngramSize" data-field="ngram_size">
+            <label class="question-block compact-field" for="lemmaProbe">Suchwort<input id="lemmaProbe" type="text" data-field="lemma_probe" placeholder="z.B. Krieg, Geschäft, Courage"></label>
+            <label class="question-block compact-field" for="ngramSize">n-Gramm<select id="ngramSize" data-field="ngram_size">
               <option>3</option>
               <option>4</option>
               <option>5</option>
               <option>6</option>
             </select></label>
           </div>
-          <div class="button-row">
-            <button type="button" class="primary-button" data-action="run-stylometry">Stilometrie aktualisieren</button>
-          </div>
+          <button type="button" class="primary-button" data-action="run-stylometry">Analyse aktualisieren</button>
           <div id="stylometryOutput" class="stylometry-output" aria-live="polite"></div>
-        </article>
+        </details>
 
-        <article class="renovation-panel">
-          <h3>Renovierte Courage-Fassung</h3>
+        <article class="renovation-panel step-panel">
+          <div class="step-badge">5</div>
+          <h3>Fassung exportieren</h3>
           <div id="montageList" class="montage-list" aria-live="polite"></div>
           <div class="button-row">
             <button type="button" class="primary-button" data-action="export-renovation-txt">Fassung als TXT exportieren</button>

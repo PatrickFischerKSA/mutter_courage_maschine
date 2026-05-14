@@ -926,7 +926,7 @@ function renderMontage() {
   const list = document.getElementById("montageList");
   if (!list) return;
   if (!state.montage.length) {
-    list.innerHTML = `<p class="section-lead">Noch keine Fassung montiert. Übernimm Originalfragmente, Hacks, neue Texte oder Videos.</p>`;
+    list.innerHTML = `<p class="section-lead">Noch keine Fassung montiert. Starte oben mit Quelle wählen, baue eine Preview und übernimm sie hierher.</p>`;
     return;
   }
   list.innerHTML = state.montage.map((block, index) => `

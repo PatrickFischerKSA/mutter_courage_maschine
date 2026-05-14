@@ -677,6 +677,53 @@ input[type="range"] {
   align-items: start;
 }
 
+.flow-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.flow-strip span {
+  border: 2px solid var(--line);
+  background: #111827;
+  color: var(--green);
+  padding: 10px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.step-panel {
+  position: relative;
+  padding-top: 42px;
+}
+
+.step-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--line);
+  background: var(--red);
+  color: #fff;
+  font-weight: 900;
+}
+
+.compact-field {
+  margin: 10px 0;
+}
+
+.compact-field textarea {
+  min-height: 90px;
+}
+
+.large-action {
+  min-width: 220px;
+}
+
 .source-panel,
 .composer-panel,
 .renovation-panel {
@@ -817,6 +864,17 @@ input[type="range"] {
   margin: 16px 0;
 }
 
+.stylometry-panel summary {
+  cursor: pointer;
+  color: var(--yellow);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.stylometry-panel[open] summary {
+  margin-bottom: 14px;
+}
+
 .panel-heading {
   display: flex;
   justify-content: space-between;
@@ -948,6 +1006,10 @@ input[type="range"] {
 
   .workspace {
     padding-top: 18px;
+  }
+
+  .flow-strip {
+    grid-template-columns: 1fr;
   }
 
   .pdf-grid,
