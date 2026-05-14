@@ -1,4 +1,4 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v2";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v4";
 
 const pdfs = {
   courage: "assets/docs/Mutter Courage und ihre Kinder.pdf",
@@ -8,183 +8,185 @@ const pdfs = {
 const modules = [
   {
     id: "plot",
-    label: "1 Plot",
-    kicker: "Modul 1",
-    title: "Der Plot zieht dich hinein",
-    lead: "Du sollst dich zuerst hineinziehen lassen. Danach wird untersucht, wie das passiert ist.",
-    organon: "Ausgangspunkt: Das Theater soll Vorgänge vorführen, damit sie beurteilbar werden. Gefühl ist Material, nicht Endstation.",
+    label: "1 Hook",
+    kicker: "Level 1",
+    title: "Hook-Test: zieht der alte Text noch?",
+    lead: "Du prüfst nicht brav den Inhalt. Du testest, ob Brechts alte Szene im heutigen Aufmerksamkeitssystem noch zündet.",
+    organon: "Brecht wollte nicht Einfühlung als Endstation, sondern ein Publikum, das Handlungen prüft. Heute muss zuerst die stumpfe Content-Wahrnehmung geknackt werden.",
     body: `
-      <p>Dreißigjähriger Krieg. Eine Marketenderin zieht mit ihrem Wagen durch die Kriegslandschaft. Ihre Kinder sind Schutz, Arbeitskraft, Risiko und Verlust zugleich. Der Krieg ist nicht nur Hintergrund, sondern Lebensraum und Geschäftsmodell.</p>
+      <div class="game-alert">Prämisse: Der Text ist kein Heiligtum. Er ist ein alter Wirkungsapparat. Wenn er heute stumpf wirkt, wird er geöffnet.</div>
+      <p>Dreißigjähriger Krieg. Marketenderin. Wagen. Kinder. Krieg als Geschäftsmodell. Das ist der alte Plot-Kern. Deine Frage: Welche Stelle erzeugt heute noch Sog, und welche Stelle braucht einen Hack?</p>
       <p class="scene-link"><a class="text-link" href="${pdfs.courage}#page=1" target="_blank" rel="noopener">Szene 1 im PDF öffnen</a><span>Platzhalter: <code>#page=1</code> später exakt anpassen.</span></p>
-      <div class="card-grid">
-        ${figureCard("Mutter Courage", "Handelt, rechnet, schützt, verliert. Keine reine Mutterfigur, keine reine Täterfigur.")}
-        ${figureCard("Eilif", "Wird dem Krieg zugeführt. Tapferkeit erscheint als Ware, Erziehung und Gefahr.")}
-        ${figureCard("Schweizerkas", "Ehrlichkeit steht nicht außerhalb der Gewalt, sondern wird in ihr geprüft.")}
-        ${figureCard("Kattrin", "Stummheit als Körperzeichen. Sie wird affektiv stark, aber nicht sentimental glatt.")}
-        ${figureCard("Feldwebel", "Ordnungssprache des Krieges. Er macht Gewalt administrierbar.")}
-        ${figureCard("Werber", "Er verkauft den Krieg als Chance und nimmt Menschen aus Familien heraus.")}
+      <div class="avatar-grid">
+        ${figureCard("Courage", "NPC oder Boss? Mutter, Händlerin, Überlebensalgorithmus.")}
+        ${figureCard("Eilif", "Recruitable asset. Tapferkeit wird zur Ressource.")}
+        ${figureCard("Schweizerkas", "Low corruption build. Im falschen System tödlich.")}
+        ${figureCard("Kattrin", "Muted character, maximum signal.")}
+        ${figureCard("Militär", "Interface der Gewalt: Formular, Befehl, Versprechen.")}
+        ${figureCard("Wagen", "Inventar, Shop, Heimat, Falle.")}
       </div>
-      <div class="task-card">
-        <h3>Leseauftrag</h3>
-        <p>Lies die erste Szene bis zu dem Moment, in dem Eilif verschwindet.</p>
+      <div class="hud-grid">
+        ${meter("hook_old", "Original-Sog", "Wie stark zieht dich die Szene noch ohne Eingriff?")}
+        ${meter("stale_risk", "Museumsrisiko", "Wie sehr droht der Text wie Pflichtlektüre zu riechen?")}
+        ${meter("hack_need", "Renovierungsdruck", "Wie stark braucht die Szene einen heutigen Eingriff?")}
       </div>
-      ${choices("affect_check", "Affekt-Check: Was ist deine erste Reaktion?", ["Ich habe Mitleid mit Mutter Courage.", "Ich finde sie berechnend.", "Ich finde sie widersprüchlich.", "Ich verstehe ihr Verhalten.", "Ich lehne ihr Verhalten ab.", "Ich weiss nicht, was ich denken soll."])}
-      ${textarea("plot_reaction_reason", "Was hat der Text getan, damit du so reagierst? Achte auf Handlung, Sprache, Tempo, Figurenkonstellation.")}
+      ${choices("affect_check", "Erste Reaktion als Spielstatus", ["Mitleid getriggert", "Misstrauen aktiv", "Figur wirkt zu historisch fern", "System wird sichtbar", "Ich will skippen", "Ich bin irritiert, aber wach"])}
+      ${textarea("plot_reaction_reason", "Welche Stelle funktioniert noch, welche Stelle nicht mehr? Begründe als Wirkungsdiagnose, nicht als Inhaltsangabe.")}
     `
   },
   {
     id: "disturbance",
-    label: "2 Störung",
-    kicker: "Modul 2",
-    title: "Störung des Mitgefühls",
-    lead: "Der V-Effekt wird hier nicht erklärt, sondern als digitaler Eingriff ausprobiert.",
-    organon: "Verfremdung heißt: Das Selbstverständliche verliert seine Selbstverständlichkeit. Man sieht nicht nur Leid, sondern die Ordnung, die Leid produziert.",
+    label: "2 Hack",
+    kicker: "Level 2",
+    title: "Text-Hack-Labor: greif in die Textgestalt ein",
+    lead: "Kopiere eine kurze Stelle aus dem PDF oder paraphrasiere sie. Dann beschädigst du sie produktiv: nicht als Gag, sondern damit Brechts intendierter Denkstoß heute wieder auftaucht.",
+    organon: "Verfremden heißt nicht verzieren. Es heißt: die Szene so umstellen, dass das Normale wieder fremd und beurteilbar wird.",
     body: `
-      <div class="stop-card">Achtung: Du leidest gerade vielleicht mit Mutter Courage. Aber Brecht will nicht, dass du im Mitleid stehen bleibst.</div>
-      ${choices("pity_target", "Womit genau leidest du?", ["Mit ihrer Armut?", "Mit ihrem Verlust?", "Mit ihrer Mutterrolle?", "Mit ihrer Geschäftstüchtigkeit?", "Mit der Situation, dass sie vom Krieg lebt?"])}
-      ${textarea("pity_disturbed_where", "Wo wird dein Mitleid im Text gestört? Notiere eine konkrete Beobachtung.")}
-      ${textarea("war_business_statement", "Welche Aussage über Krieg und Geschäft steckt in dieser Störung?")}
+      ${hackLab()}
       <div class="two-column">
-        ${textarea("sympathy_quote", "Textstelle, die Mutter Courage sympathisch wirken lässt")}
-        ${textarea("disturbing_quote", "Textstelle, die diese Sympathie wieder stört")}
+        ${textarea("sympathy_quote", "Originalstelle: Wo entsteht Nähe, Mitleid, Sog?")}
+        ${textarea("disturbing_quote", "Hack-Stelle: Wie zerstörst du diese Nähe, ohne die Szene dümmer zu machen?")}
       </div>
-      <button type="button" class="warning-button" data-action="interrupt" data-text="Markiere den Moment, in dem du gemerkt hast: Ich fühle gerade schneller, als ich denke.">Illusion unterbrechen</button>
+      ${choices("hack_principle", "Welche Operation trifft Brecht heute am ehesten?", ["Algorithmus sichtbar machen", "Preis an jedes Gefühl hängen", "Heroischen Moment entwerten", "Live-Kommentar einblenden", "Sprache in Werbe-/Krisen-Sprech kippen", "Publikum als Mitverdienende markieren"])}
+      ${textarea("war_business_statement", "Was sieht man nach deinem Eingriff, was der Originaltext allein heute vielleicht nicht mehr zuverlässig sichtbar macht?")}
+      <button type="button" class="warning-button" data-action="interrupt" data-text="Du hast den Text angefasst. Jetzt prüfe: Ist das nur Style, oder produziert es Urteil?">Hack prüfen</button>
     `
   },
   {
     id: "unstable",
-    label: "3 Urteil",
-    kicker: "Modul 3",
-    title: "Mutter Courage als instabile Figur",
-    lead: "Die Figur soll nicht moralisch festgenagelt werden. Sie soll schwanken, damit dein Urteil arbeiten muss.",
-    organon: "Brecht interessiert die Handlung unter Bedingungen. Die Figur wird dadurch lesbar, aber nicht bequem eindeutig.",
+    label: "3 Build",
+    kicker: "Level 3",
+    title: "Courage-Build: Figur als System-Avatar",
+    lead: "Du levelst Mutter Courage nicht zur Heldin oder Schurkin. Du kalibrierst, welcher gesellschaftliche Mechanismus durch sie spielbar wird.",
+    organon: "Die Figur ist kein Innenleben-Container. Sie zeigt Verhalten unter Bedingungen.",
     body: `
-      <label class="question-block"><span>Bearbeitete Szene</span><select data-field="slider_scene">${["Szene 1", "Szene 2", "Szene 3", "Szene 4", "Szene 5", "Szene 6", "Szene 7", "Szene 8", "Szene 9", "Szene 10", "Szene 11", "Szene 12"].map(s => `<option>${s}</option>`).join("")}</select></label>
+      <label class="question-block"><span>Level / Szene</span><select data-field="slider_scene">${["Szene 1: Recruitment", "Szene 2: Ruhm als Ware", "Szene 3: Handel mit Leben", "Szene 4: Kapitulation", "Szene 5: Verwundete Körper", "Szene 6: Begräbnisökonomie", "Szene 7: Business läuft", "Szene 8: Frieden als Störung", "Szene 9: Hunger", "Szene 10: Durchzug", "Szene 11: Kattrin-Alarm", "Szene 12: Weiterziehen"].map(s => `<option>${s}</option>`).join("")}</select></label>
       <div class="slider-bank">
         ${slider("victim_profiteer", "Opfer des Krieges", "Profiteurin des Krieges")}
         ${slider("mother_business", "fürsorgliche Mutter", "geschäftlich verblendet")}
         ${slider("survival_blindness", "klug überlebend", "politisch blind")}
       </div>
-      ${textarea("slider_reason", "Begründe deine aktuelle Einstellung der Regler mit einer konkreten Textstelle.")}
-      <button type="button" class="primary-button" data-action="save-slider-snapshot">Reglerstand für diese Szene speichern</button>
+      ${textarea("slider_reason", "Welche Textstelle oder welcher Hack begründet diesen Build?")}
+      <button type="button" class="primary-button" data-action="save-slider-snapshot">Build-Snapshot speichern</button>
       <div id="sliderTimeline" class="timeline" aria-live="polite"></div>
-      ${textarea("unstable_reflection", "Warum ist Mutter Courage als Figur schwer eindeutig zu beurteilen? Was bewirkt diese Unsicherheit?")}
+      ${textarea("unstable_reflection", "Warum wäre eine eindeutige Moralwertung hier zu schwach für Gegenwartspublikum?")}
     `
   },
   {
     id: "songs",
-    label: "4 Songs",
-    kicker: "Modul 4",
-    title: "Die Songs als Unterbrechungsmaschinen",
-    lead: "Die Lieder sind keine Dekoration. Sie schalten die Szene um: vom Miterleben zum Prüfen.",
-    organon: "Songs können Handlung anhalten, kommentieren, verallgemeinern und Figuren durchschaubar machen.",
+    label: "4 Sample",
+    kicker: "Level 4",
+    title: "Song-Sampler: Lied als harter Cut",
+    lead: "Die Songs werden zu Samples, Pop-ups, Audio-Fehlern, Kommentar-Loops. Kein Soundtrack für Gefühl, sondern ein Angriff auf falsche Beruhigung.",
+    organon: "Der Song hält die Handlung an und macht aus Einzelfall eine Regel.",
     body: `
       <div class="song-grid">
-        ${songStation("Lied der Mutter Courage", "Was verkauft dieses Lied: Erfahrung, Härte, Überleben oder Selbstbetrug?", "song_courage")}
-        ${songStation("Lied von der großen Kapitulation", "Wo kippt Anpassung von Überleben in Einverständnis?", "song_capitulation")}
-        ${songStation("Salomon-Song", "Welche Klugheit wird hier verdächtig gemacht?", "song_salomon")}
+        ${songStation("Courage-Sample", "Wird daraus Jingle, Warnsirene, Voice-Over oder Abspann eines Kriegs-Shops?", "song_courage")}
+        ${songStation("Kapitulations-Loop", "Anpassung als Lifehack: Wo kippt Pragmatismus in Mitschuld?", "song_capitulation")}
+        ${songStation("Salomon-Filter", "Welche Klugheit ist im falschen System nur verwertete Intelligenz?", "song_salomon")}
       </div>
-      ${choices("song_effects", "Was macht ein Song mit der Szene?", ["Es verstärkt das Gefühl.", "Es unterbricht das Gefühl.", "Es kommentiert die Handlung.", "Es verallgemeinert den Einzelfall.", "Es macht eine Figur durchschaubar.", "Es zeigt eine gesellschaftliche Regel."])}
-      ${textarea("song_attitude", "Welche Haltung erzeugt das Lied?")}
-      ${textarea("song_stage_showing", "Was würdest du auf der Bühne während des Liedes zeigen?")}
+      ${choices("song_effects", "Welche Sample-Funktion wählst du?", ["Skip-Button wird gesperrt", "Lied wird Werbespot", "Untertitel widersprechen dem Gesang", "Beat bricht genau beim Gefühl ab", "Publikum bekommt Preisliste", "Figur wird zur Statistik"])}
+      ${textarea("song_attitude", "Welche Haltung erzeugt dein Sample?")}
+      ${textarea("song_stage_showing", "Was würdest du digital während des Songs einblenden, überlagern oder löschen?")}
       <div class="two-column">
-        ${textarea("wrong_music", "Welche Musik wäre falsch, weil sie zu stark emotionalisiert?")}
-        ${textarea("brecht_music", "Welche Musik würde brechtisch funktionieren?")}
+        ${textarea("wrong_music", "Welche Soundentscheidung wäre zu Netflix, zu glatt, zu rührselig?")}
+        ${textarea("brecht_music", "Welche Soundentscheidung würde heute brechtisch funktionieren?")}
       </div>
     `
   },
   {
     id: "aristotle",
-    label: "5 Kontrast",
-    kicker: "Modul 5",
-    title: "Brecht gegen Aristoteles",
-    lead: "Die Differenz wird als Kontrastmodus gebaut: Läuterung gegen Fortgang der Verhältnisse.",
+    label: "5 Anti-Quest",
+    kicker: "Level 5",
+    title: "Anti-Quest: keine Erlösung, kein Bossfight-Ende",
+    lead: "Viele heutige Medien erzählen Schuld, Läuterung, Charakterentwicklung. Brecht verweigert genau diesen befriedigenden Questbogen.",
     organon: "Post-aristotelisch heißt hier: nicht Reinigung durch Mitleid und Furcht, sondern Untersuchung von Handlungen und Zuständen.",
     body: `
       <div class="contrast-grid">
         <article class="projection-card">
-          <h3>Karte A: Klassisches Drama</h3>
-          <p>Die Figur erkennt ihre Schuld, bricht zusammen, bereut und verändert sich. Das Publikum erlebt eine innere Lösung.</p>
+          <h3>Mainstream-Quest</h3>
+          <p>Die Figur erkennt Schuld, bricht zusammen, bekommt Backstory, wird geläutert. Das Publikum darf emotional sauber nach Hause.</p>
         </article>
         <article class="warning-card">
-          <h3>Karte B: Brecht</h3>
-          <p>Die Figur erkennt nichts Grundsätzliches. Die Handlung geht weiter. Die gesellschaftlichen Verhältnisse bleiben sichtbar.</p>
+          <h3>Brecht-Patch</h3>
+          <p>Die Figur erkennt nichts Grundsätzliches. Das System läuft weiter. Die Zuschauer*innen bleiben mit der Frage sitzen, warum das so profitabel ist.</p>
         </article>
       </div>
-      ${textarea("catharsis_absent", "Wo bleibt Katharsis aus?")}
-      ${textarea("identification_blocked", "Wo verhindert Brecht Identifikation?")}
-      ${textarea("no_conversion", "Warum ist es wichtig, dass Mutter Courage nicht einfach geläutert wird?")}
-      ${textarea("tragedy_loss", "Was wäre verloren, wenn die Szene als reine Tragödie erzählt würde?")}
+      ${textarea("catharsis_absent", "Wo würdest du eine erwartete Erlösung hart abbrechen?")}
+      ${textarea("identification_blocked", "Welche Identifikationsangebote würdest du löschen oder vergiften?")}
+      ${textarea("no_conversion", "Warum darf Mutter Courage nicht einfach zur besseren Person werden?")}
+      ${textarea("tragedy_loss", "Was wäre politisch verloren, wenn die Szene als reine Tragödie gestreamt würde?")}
     `
   },
   {
     id: "warbusiness",
-    label: "6 Geschäft",
-    kicker: "Modul 6",
-    title: "Krieg als Geschäft",
-    lead: "Die Analysewand macht sichtbar, dass das Stück nicht nur private Verluste zeigt, sondern eine Ökonomie.",
+    label: "6 Economy",
+    kicker: "Level 6",
+    title: "War Economy Overlay",
+    lead: "Du legst ein Spiel-Interface über den Text: Inventar, Preise, Risiken, Kollateralschäden. Plötzlich wird sichtbar, dass Krieg nicht Kulisse ist, sondern Markt.",
     organon: "Historisierendes Denken fragt: Welche Ordnung macht dieses Verhalten plausibel, profitabel, nötig oder blind?",
     body: `
+      <div class="game-alert">Regel: Jede Textstelle, die privat klingt, muss auf ihre Ökonomie getestet werden.</div>
       <div id="conceptWall" class="analysis-grid"></div>
-      ${textarea("who_profits", "Wer verdient am Krieg?")}
-      ${textarea("who_pays", "Wer bezahlt den Preis?")}
-      ${textarea("survival_complicity", "Wann wird Überleben zur Mitschuld?")}
-      ${textarea("not_outside_system", "Warum ist Mutter Courage nicht ausserhalb des Systems?")}
-      ${textarea("pity_not_enough", "Warum reicht individuelles Mitleid nicht aus, um das Stück zu verstehen?")}
+      ${textarea("who_profits", "Wer bekommt XP, Geld, Schutz, Status oder Aufmerksamkeit aus dem Krieg?")}
+      ${textarea("who_pays", "Wer bezahlt mit Körper, Kind, Stimme, Zukunft?")}
+      ${textarea("survival_complicity", "Wann wird Überleben zur Mitwirkung am System?")}
+      ${textarea("not_outside_system", "Warum ist Mutter Courage kein Opfer ausserhalb des Systems, sondern eine Spielerin darin?")}
+      ${textarea("pity_not_enough", "Warum ist Mitleid als Interface zu klein für dieses System?")}
       <div class="warning-card">
-        Gegenwartsanalogien sind erlaubt, aber keine platte Modernisierung. Der Vergleich muss auch seine Grenze zeigen.
+        Gegenwartsanalogien sind Pflicht, aber platte Aktualisierung zählt als Fehlklick. Zeige auch, wo der Vergleich bricht.
       </div>
-      ${textarea("present_analogy", "Formuliere eine vorsichtige Gegenwartsanalogie: Krieg als Geschäftsmodell heute, Krisenökonomie, Waffenindustrie, Konsum trotz globaler Krisen, moralischer Druck unter ökonomischer Abhängigkeit. Zeige auch, wo der Vergleich problematisch wird.")}
+      ${textarea("present_analogy", "Formuliere eine Gegenwartsanalogie: Krieg als Geschäftsmodell heute, Krisenökonomie, Plattformlogik, Waffenindustrie, Katastrophen-Content, Konsum trotz globaler Krisen. Zeige die Grenze des Vergleichs.")}
     `
   },
   {
     id: "kattrin",
-    label: "7 Kattrin",
-    kicker: "Modul 7",
-    title: "Kattrin und das gefährliche Mitleid",
-    lead: "Kattrin zieht Affekt an. Gerade deshalb muss die Inszenierung fragen, was dieser Affekt politisch kann und was er verdeckt.",
+    label: "7 Alarm",
+    kicker: "Level 7",
+    title: "Kattrin-Alarm: stumme Figur, maximales Signal",
+    lead: "Kattrin darf nicht zur rührenden Cutscene werden. Ihr Trommeln muss das System stören, nicht das Publikum trösten.",
     organon: "Eine stumme Handlung kann mehr zeigen als eine erklärende Rede. Entscheidend ist, ob das Publikum nur gerührt oder wach gemacht wird.",
     body: `
       <div class="kattrin-zone">
         <div id="drumStage" class="drum-stage">TROMMEL?</div>
         <button type="button" class="primary-button" data-action="play-drum">Trommel-Signal testen</button>
       </div>
-      ${textarea("kattrin_pity", "Warum wirkt Kattrin besonders stark auf das Mitgefühl?")}
-      ${textarea("kattrin_silence", "Warum ist ihre Stummheit theatral wichtig?")}
-      ${textarea("kattrin_protest", "Warum zeigt gerade eine stumme Figur den stärksten Protest?")}
-      ${textarea("kattrin_not_hero", "Was unterscheidet Kattrins Handlung von einer klassischen Heldenszene?")}
-      ${textarea("kattrin_blocked_consolation", "Wo verhindert Brecht, dass wir uns einfach beruhigt von ihr rühren lassen?")}
-      ${choices("kattrin_design", "Wie soll Kattrins Trommeln digital inszeniert werden?", ["lauter werdender Rhythmus", "völlige Stille vor dem Trommeln", "Textprojektionen", "eingefrorene Bühne", "Kommentare aus dem Off", "keine Musik"])}
-      ${textarea("kattrin_design_reason", "Begründe deine Entscheidung.")}
+      ${textarea("kattrin_pity", "Warum triggert Kattrin Mitleid schneller als Courage?")}
+      ${textarea("kattrin_silence", "Wie wird Stummheit im digitalen Raum als Signal statt als Defizit inszeniert?")}
+      ${textarea("kattrin_protest", "Warum ist ihr Alarm stärker als ein Monolog?")}
+      ${textarea("kattrin_not_hero", "Wie verhinderst du, dass daraus eine klassische Heldinnen-Cutscene wird?")}
+      ${textarea("kattrin_blocked_consolation", "Welche Beruhigung muss nach Kattrins Handlung zerstört werden?")}
+      ${choices("kattrin_design", "Wähle den Alarm-Modus", ["lauter werdender Rhythmus", "völlige Stille vor dem Trommeln", "Textprojektionen", "eingefrorene Bühne", "Kommentare aus dem Off", "keine Musik", "Bild friert ein, Score läuft weiter", "Publikum bekommt Mitschuld-Popup"])}
+      ${textarea("kattrin_design_reason", "Warum produziert dieser Modus Denken statt bloss Rührung?")}
     `
   },
   {
     id: "build",
-    label: "8 V-Effekt",
-    kicker: "Modul 8",
-    title: "Baue deinen eigenen V-Effekt",
-    lead: "Jetzt wird aus Analyse Regie. Du inszenierst eine Szene so, dass das Publikum nicht vergisst zu denken.",
+    label: "8 Patch",
+    kicker: "Level 8",
+    title: "Final Patch: baue eine heutige Brecht-Szene",
+    lead: "Du machst kein Update mit moderner Tapete. Du baust einen Wirkungsersatz: Was muss heute geschehen, damit Brechts Ziel wieder eintritt?",
     organon: "Zeigen statt bloss erleben: Die Szene soll ihre eigenen Bedingungen sichtbar machen.",
     body: `
       <div class="form-grid two-column">
-        ${input("ve_scene", "Welche Szene wählst du?")}
-        ${input("ve_interruption", "Wo wird unterbrochen?")}
-        ${input("ve_projection", "Welche Textstelle wird projiziert?")}
-        ${input("ve_direct_address", "Welche Figur spricht direkt ans Publikum?")}
-        ${input("ve_prop", "Welche Requisite wird überdeutlich gezeigt?")}
-        ${input("ve_music", "Wo wird Musik eingesetzt?")}
-        ${input("ve_no_music", "Wo darf gerade keine Musik sein?")}
+        ${input("ve_scene", "Welche Originalszene hackst du?")}
+        ${input("ve_interruption", "Wo wird der Flow brutal unterbrochen?")}
+        ${input("ve_projection", "Welche Originalzeile wird als Overlay, Fehlermeldung oder Preisetikett projiziert?")}
+        ${input("ve_direct_address", "Wer greift das Publikum direkt an?")}
+        ${input("ve_prop", "Welches Ding wird zum überdeutlichen Interface?")}
+        ${input("ve_music", "Wo wird Sound als Köder eingesetzt?")}
+        ${input("ve_no_music", "Wo muss absolute Trockenheit herrschen?")}
         ${input("ve_pity", "Wo entsteht Mitleid?")}
-        ${input("ve_pity_disturbed", "Wo wird dieses Mitleid gestört?")}
-        ${input("ve_social_question", "Welche gesellschaftliche Frage soll sichtbar werden?")}
+        ${input("ve_pity_disturbed", "Wie sabotierst du dieses Mitleid?")}
+        ${input("ve_social_question", "Welche gesellschaftliche Frage bleibt als Störung zurück?")}
       </div>
-      <button type="button" class="primary-button" data-action="generate-concept">Regiekonzept generieren</button>
+      <button type="button" class="primary-button" data-action="generate-concept">Patch-Manifest generieren</button>
       <pre id="generatedConcept" class="generated-concept"></pre>
     `
   }
 ];
 
-const concepts = ["Krieg", "Geschäft", "Überleben", "Profit", "Moral", "Anpassung", "Mitschuld", "Verlust", "Ware", "Körper", "Kinder", "Markt"];
+const concepts = ["Krieg", "Geschäft", "Überleben", "Profit", "Moral", "Anpassung", "Mitschuld", "Verlust", "Ware", "Körper", "Kinder", "Markt", "Content", "Algorithmus", "Krise", "Aufmerksamkeit"];
 
 let state = loadState();
 
@@ -198,6 +200,44 @@ function textarea(field, label) {
 
 function input(field, label) {
   return `<label class="question-block" for="${field}">${label}<input id="${field}" type="text" data-field="${field}"></label>`;
+}
+
+function meter(field, label, hint) {
+  return `
+    <label class="meter-card" for="${field}">
+      <span>${label}</span>
+      <small>${hint}</small>
+      <input id="${field}" type="range" min="0" max="100" value="50" data-slider="${field}">
+      <output id="${field}_value">50</output>
+    </label>
+  `;
+}
+
+function hackLab() {
+  return `
+    <div class="hack-lab">
+      <div class="hack-screen">
+        <label for="hackInput">Textfragment / Rohmaterial</label>
+        <textarea id="hackInput" data-field="hack_input" placeholder="Kurze Stelle aus dem PDF kopieren oder sinngemäß notieren. Dann Operation wählen."></textarea>
+      </div>
+      <div class="operation-deck" aria-label="Textoperationen">
+        <button type="button" class="chip-button" data-hack="redact">Zensieren</button>
+        <button type="button" class="chip-button" data-hack="price">Preise ankleben</button>
+        <button type="button" class="chip-button" data-hack="feed">Feed-Sprache</button>
+        <button type="button" class="chip-button" data-hack="chorus">Chor einbauen</button>
+        <button type="button" class="chip-button" data-hack="glitch">Glitch</button>
+        <button type="button" class="chip-button" data-hack="cold">Mitleid kaltstellen</button>
+      </div>
+      <div class="hack-screen output">
+        <div class="screen-label">Renovierter Output</div>
+        <pre id="hackOutput" class="hack-output">Noch kein Eingriff. Der Text wartet auf Beschädigung.</pre>
+      </div>
+      <div class="button-row">
+        <button type="button" class="primary-button" data-action="save-hack">Diesen Hack speichern</button>
+      </div>
+      <div id="hackArchive" class="hack-archive" aria-live="polite"></div>
+    </div>
+  `;
 }
 
 function choices(field, legend, options) {
@@ -262,6 +302,7 @@ function freshState() {
       survival_blindness: 50
     },
     sliderHistory: [],
+    hacks: [],
     completed: {},
     conceptNotes: {},
     generatedConcept: ""
@@ -343,6 +384,9 @@ function hydrate() {
   });
   const generated = document.getElementById("generatedConcept");
   if (generated) generated.textContent = state.generatedConcept || "Noch kein Regiekonzept generiert.";
+  const hackOutput = document.getElementById("hackOutput");
+  if (hackOutput) hackOutput.textContent = state.fields.hack_output || "Noch kein Eingriff. Der Text wartet auf Beschädigung.";
+  renderHackArchive();
   renderSliderTimeline();
   renderSummary();
   renderTeacher();
@@ -384,6 +428,72 @@ function saveSliderSnapshot() {
   renderSliderTimeline();
 }
 
+function runHack(operation) {
+  const input = (state.fields.hack_input || "").trim();
+  const source = input || "Mutter Courage zieht den Wagen durch den Krieg und handelt weiter.";
+  const hacked = transformText(source, operation);
+  state.fields.hack_output = hacked;
+  state.fields.last_hack_operation = operation;
+  const output = document.getElementById("hackOutput");
+  if (output) output.textContent = hacked;
+  saveState();
+}
+
+function transformText(text, operation) {
+  const words = text.split(/\s+/).filter(Boolean);
+  const priceTags = ["[Preis: 3 Leben]", "[Rabatt bei Verlust]", "[Risiko ausgelagert]", "[Mitleid nicht erstattbar]"];
+  if (operation === "redact") {
+    return words.map((word, index) => index % 3 === 1 ? "████" : word).join(" ") + "\n\nSYSTEM: Was geschwärzt ist, arbeitet trotzdem weiter.";
+  }
+  if (operation === "price") {
+    return words.map((word, index) => `${word}${index % 4 === 0 ? " " + priceTags[index % priceTags.length] : ""}`).join(" ");
+  }
+  if (operation === "feed") {
+    return `LIVE-FEED // KRIEG LÄUFT\n${text}\n\nKommentarbereich: Wer profitiert? Wer nennt es nur Überleben? Wer scrollt weiter?`;
+  }
+  if (operation === "chorus") {
+    return `${text}\n\nCHOR DER KUNDEN: Wir wollen nichts wissen, aber billig soll es sein.\nCHOR DER VERLIERER: Ihr nennt es Markt, wir nennen es Körper.`;
+  }
+  if (operation === "glitch") {
+    return text.replace(/[aeiouäöü]/gi, (match) => `${match}/${match}`).replace(/\./g, " // FEHLER: Sinn zu glatt.");
+  }
+  if (operation === "cold") {
+    return `KAMERA BLEIBT WEIT WEG.\n${text}\n\nKeine Musik. Kein Close-up. Nur Inventar: Ware, Kind, Wagen, Verlust.`;
+  }
+  return text;
+}
+
+function saveHack() {
+  const output = state.fields.hack_output || "";
+  if (!output.trim()) {
+    runHack("cold");
+  }
+  state.hacks.push({
+    at: new Date().toISOString(),
+    operation: state.fields.last_hack_operation || "manual",
+    input: state.fields.hack_input || "",
+    output: state.fields.hack_output || ""
+  });
+  state.completed.disturbance = true;
+  saveState();
+  renderHackArchive();
+}
+
+function renderHackArchive() {
+  const archive = document.getElementById("hackArchive");
+  if (!archive) return;
+  if (!state.hacks.length) {
+    archive.innerHTML = `<p class="section-lead">Noch keine Textoperation gespeichert.</p>`;
+    return;
+  }
+  archive.innerHTML = state.hacks.map((hack, index) => `
+    <article class="hack-card">
+      <strong>Hack ${index + 1}: ${escapeHtml(hack.operation)}</strong>
+      <pre>${escapeHtml(hack.output)}</pre>
+    </article>
+  `).join("");
+}
+
 function renderSliderTimeline() {
   const mount = document.getElementById("sliderTimeline");
   if (!mount) return;
@@ -416,20 +526,20 @@ function sliderName(key) {
 function generateConcept() {
   const f = state.fields;
   const concept = [
-    "REGIEKONZEPT: DIGITALER V-EFFEKT",
+    "PATCH-MANIFEST: COURAGE.EXE RENOVIERT",
     "",
-    `Szene: ${f.ve_scene || "[offen]"}`,
-    `Unterbrechung: ${f.ve_interruption || "[offen]"}`,
-    `Projektion: ${f.ve_projection || "[offen]"}`,
-    `Direkte Publikumsadresse: ${f.ve_direct_address || "[offen]"}`,
-    `Überdeutliche Requisite: ${f.ve_prop || "[offen]"}`,
-    `Musik: ${f.ve_music || "[offen]"}`,
-    `Keine Musik: ${f.ve_no_music || "[offen]"}`,
+    `Originalszene: ${f.ve_scene || "[offen]"}`,
+    `Flow-Abbruch: ${f.ve_interruption || "[offen]"}`,
+    `Overlay / Fehlermeldung / Preisetikett: ${f.ve_projection || "[offen]"}`,
+    `Publikumsangriff: ${f.ve_direct_address || "[offen]"}`,
+    `Interface-Ding: ${f.ve_prop || "[offen]"}`,
+    `Sound als Köder: ${f.ve_music || "[offen]"}`,
+    `Trockenheit / keine Musik: ${f.ve_no_music || "[offen]"}`,
     `Mitleid entsteht: ${f.ve_pity || "[offen]"}`,
-    `Mitleid wird gestört: ${f.ve_pity_disturbed || "[offen]"}`,
-    `Gesellschaftliche Frage: ${f.ve_social_question || "[offen]"}`,
+    `Mitleid-Sabotage: ${f.ve_pity_disturbed || "[offen]"}`,
+    `Reststörung: ${f.ve_social_question || "[offen]"}`,
     "",
-    "Prinzip: Die Szene soll nicht verschwinden lassen, dass sie gemacht ist. Das Publikum soll sehen, wodurch seine Haltung entsteht."
+    "Prinzip: Nicht Brecht aktualisieren, als wäre er altmodisch. Sondern die heutige Wahrnehmung angreifen, bis Brechts Frage wieder weh tut."
   ].join("\n");
   state.generatedConcept = concept;
   state.completed.build = true;
@@ -442,7 +552,8 @@ function renderSummary() {
   if (!mount) return;
   const cards = [
     ["Affektantworten", list(state.choices.affect_check)],
-    ["Reglerstände", state.sliderHistory.length ? `${state.sliderHistory.length} gespeicherte Szenen` : "Noch kein Verlauf"],
+    ["Text-Hacks", state.hacks.length ? `${state.hacks.length} gespeicherte Eingriffe` : "Noch kein Hack"],
+    ["Reglerstände", state.sliderHistory.length ? `${state.sliderHistory.length} gespeicherte Builds` : "Noch kein Verlauf"],
     ["Textstellen", [state.fields.sympathy_quote, state.fields.disturbing_quote].filter(Boolean).join("\n\n") || "Noch keine Textstellen"],
     ["Gegenwartsanalogie", state.fields.present_analogy || "Noch offen"],
     ["Regiekonzept", state.generatedConcept || "Noch nicht generiert"],
@@ -498,6 +609,10 @@ function toText(payload) {
   });
   lines.push("\nREGIEKONZEPT");
   lines.push(payload.data.generatedConcept || "");
+  lines.push("\nTEXT-HACKS");
+  payload.data.hacks.forEach((hack, index) => {
+    lines.push(`Hack ${index + 1} (${hack.operation})\n${hack.output}`);
+  });
   return lines.join("\n");
 }
 
@@ -599,6 +714,8 @@ function bindEvents() {
       saveState();
     }
     if (target.dataset.action === "save-slider-snapshot") saveSliderSnapshot();
+    if (target.dataset.action === "save-hack") saveHack();
+    if (target.dataset.hack) runHack(target.dataset.hack);
     if (target.dataset.action === "generate-concept") generateConcept();
     if (target.dataset.action === "export-json") exportData("json");
     if (target.dataset.action === "export-txt") exportData("txt");
