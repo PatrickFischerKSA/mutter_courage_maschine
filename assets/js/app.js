@@ -1,4 +1,5 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v4";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v6";
+const sourceCorpus = window.COURAGE_TEXT || [];
 
 const pdfs = {
   courage: "assets/docs/Mutter Courage und ihre Kinder.pdf",
@@ -303,6 +304,8 @@ function freshState() {
     },
     sliderHistory: [],
     hacks: [],
+    selectedSourceId: null,
+    montage: [],
     completed: {},
     conceptNotes: {},
     generatedConcept: ""
@@ -322,6 +325,7 @@ function renderNav() {
     { id: "start", label: "Start" },
     { id: "reader", label: "PDFs" },
     ...modules.map((module) => ({ id: module.id, label: module.label })),
+    { id: "dramaturgy", label: "Tool" },
     { id: "machine", label: "9 Maschine" },
     { id: "teacher", label: "Lehrerbereich" }
   ];
@@ -387,6 +391,8 @@ function hydrate() {
   const hackOutput = document.getElementById("hackOutput");
   if (hackOutput) hackOutput.textContent = state.fields.hack_output || "Noch kein Eingriff. Der Text wartet auf Beschädigung.";
   renderHackArchive();
+  renderSourceReader();
+  renderMontage();
   renderSliderTimeline();
   renderSummary();
   renderTeacher();
@@ -405,7 +411,7 @@ function showSection(id) {
 }
 
 function nextSection(current) {
-  const order = ["start", "reader", ...modules.map((m) => m.id), "machine", "teacher"];
+  const order = ["start", "reader", ...modules.map((m) => m.id), "dramaturgy", "machine", "teacher"];
   const index = order.indexOf(current);
   showSection(order[Math.min(index + 1, order.length - 1)] || "start");
 }
@@ -494,6 +500,229 @@ function renderHackArchive() {
   `).join("");
 }
 
+function getSelectedSource() {
+  return sourceCorpus.find((item) => item.id === state.selectedSourceId) || sourceCorpus[4] || sourceCorpus[0] || null;
+}
+
+function renderSourceReader(query = "") {
+  const results = document.getElementById("sourceResults");
+  const preview = document.getElementById("sourcePreview");
+  if (!results || !preview) return;
+  const term = query.trim().toLowerCase();
+  const matches = sourceCorpus
+    .filter((item) => !term || item.text.toLowerCase().includes(term) || item.label.toLowerCase().includes(term))
+    .slice(0, 18);
+  results.innerHTML = matches.length ? matches.map((item) => `
+    <button type="button" class="source-result ${state.selectedSourceId === item.id ? "is-active" : ""}" data-source-id="${item.id}">
+      <strong>${escapeHtml(item.label)}</strong>
+      <span>Fragment ${item.pageHint}</span>
+      <small>${escapeHtml(item.text.slice(0, 220))}${item.text.length > 220 ? " ..." : ""}</small>
+    </button>
+  `).join("") : `<p class="section-lead">Keine Treffer. Suchbegriff ändern oder leer lassen.</p>`;
+  const selected = getSelectedSource();
+  preview.textContent = selected ? selected.text : "Kein Textkorpus geladen.";
+}
+
+function selectSource(id) {
+  state.selectedSourceId = id;
+  saveState();
+  renderSourceReader(document.querySelector("[data-source-search]")?.value || "");
+}
+
+function sourceToHack() {
+  const selected = getSelectedSource();
+  if (!selected) return;
+  const fragment = selected.text.slice(0, 1200);
+  state.fields.hack_input = fragment;
+  const input = document.getElementById("hackInput");
+  if (input) input.value = fragment;
+  saveState();
+  showSection("disturbance");
+}
+
+function addMontageBlock(block) {
+  state.montage.push({
+    id: `m${Date.now()}_${Math.random().toString(16).slice(2)}`,
+    createdAt: new Date().toISOString(),
+    ...block
+  });
+  state.completed.dramaturgy = true;
+  saveState();
+  renderMontage();
+  renderSummary();
+}
+
+function sourceToMontage() {
+  const selected = getSelectedSource();
+  if (!selected) return;
+  addMontageBlock({
+    type: "Originalfragment",
+    title: selected.label,
+    source: `Mutter Courage PDF / Fragment ${selected.pageHint}`,
+    text: selected.text
+  });
+}
+
+function hackToMontage() {
+  const text = state.fields.hack_output || "";
+  if (!text.trim()) return;
+  addMontageBlock({
+    type: "Text-Hack",
+    title: `Hack: ${state.fields.last_hack_operation || "manual"}`,
+    source: state.fields.hack_input ? "Hack-Labor" : "Hack-Labor / ohne Original",
+    text
+  });
+}
+
+function addCustomBlock() {
+  const title = state.fields.block_title || "Unbenannter Block";
+  const type = state.fields.block_type || "Neuer Szenentext";
+  const text = state.fields.block_text || "";
+  const video = state.fields.block_video || "";
+  if (!text.trim() && !video.trim()) return;
+  addMontageBlock({ type, title, text, video, source: "Neues Material" });
+  state.fields.block_title = "";
+  state.fields.block_text = "";
+  state.fields.block_video = "";
+  ["blockTitle", "blockText", "blockVideo"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  saveState();
+}
+
+function renderMontage() {
+  const list = document.getElementById("montageList");
+  if (!list) return;
+  if (!state.montage.length) {
+    list.innerHTML = `<p class="section-lead">Noch keine Fassung montiert. Übernimm Originalfragmente, Hacks, neue Texte oder Videos.</p>`;
+    return;
+  }
+  list.innerHTML = state.montage.map((block, index) => `
+    <article class="montage-block">
+      <div class="montage-head">
+        <div>
+          <strong>${index + 1}. ${escapeHtml(block.title || "Block")}</strong>
+          <span>${escapeHtml(block.type || "Material")} / ${escapeHtml(block.source || "ohne Quelle")}</span>
+        </div>
+        <div class="button-row">
+          <button type="button" class="tiny-button" data-action="move-block-up" data-block-id="${block.id}">Hoch</button>
+          <button type="button" class="tiny-button" data-action="move-block-down" data-block-id="${block.id}">Runter</button>
+          <button type="button" class="tiny-button" data-action="delete-block" data-block-id="${block.id}">Löschen</button>
+        </div>
+      </div>
+      ${block.video ? `<p class="video-ref">VIDEO: ${escapeHtml(block.video)}</p>${videoEmbed(block.video)}` : ""}
+      <pre>${escapeHtml(block.text || "")}</pre>
+    </article>
+  `).join("");
+}
+
+function videoEmbed(url) {
+  const safeUrl = escapeHtml(url);
+  if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)) {
+    return `<video controls src="${safeUrl}"></video>`;
+  }
+  if (/youtube\.com|youtu\.be|vimeo\.com/i.test(url)) {
+    return `<a class="text-link" href="${safeUrl}" target="_blank" rel="noopener">Video öffnen</a>`;
+  }
+  return "";
+}
+
+function moveBlock(id, direction) {
+  const index = state.montage.findIndex((block) => block.id === id);
+  const next = index + direction;
+  if (index < 0 || next < 0 || next >= state.montage.length) return;
+  const [block] = state.montage.splice(index, 1);
+  state.montage.splice(next, 0, block);
+  saveState();
+  renderMontage();
+}
+
+function deleteBlock(id) {
+  state.montage = state.montage.filter((block) => block.id !== id);
+  saveState();
+  renderMontage();
+}
+
+function exportRenovation(type) {
+  const payload = {
+    title: "Renovierte Courage-Fassung",
+    exportedAt: new Date().toISOString(),
+    blocks: state.montage
+  };
+  let content = "";
+  let mime = "text/plain;charset=utf-8";
+  let extension = type;
+  if (type === "json") {
+    content = JSON.stringify(payload, null, 2);
+    mime = "application/json";
+  } else if (type === "html") {
+    content = renovationHtml(payload);
+    mime = "text/html;charset=utf-8";
+  } else {
+    content = renovationText(payload);
+  }
+  downloadFile(`renovierte-courage-fassung.${extension}`, content, mime);
+}
+
+function renovationText(payload) {
+  return [
+    payload.title,
+    `Export: ${payload.exportedAt}`,
+    "",
+    ...payload.blocks.map((block, index) => [
+      `## ${index + 1}. ${block.title || "Block"} [${block.type || "Material"}]`,
+      block.source ? `Quelle: ${block.source}` : "",
+      block.video ? `Video: ${block.video}` : "",
+      block.text || ""
+    ].filter(Boolean).join("\n"))
+  ].join("\n\n");
+}
+
+function renovationHtml(payload) {
+  const blocks = payload.blocks.map((block, index) => `
+    <section>
+      <p class="meta">${index + 1} / ${escapeHtml(block.type || "Material")} / ${escapeHtml(block.source || "")}</p>
+      <h2>${escapeHtml(block.title || "Block")}</h2>
+      ${block.video ? `<p><a href="${escapeHtml(block.video)}">${escapeHtml(block.video)}</a></p>` : ""}
+      <pre>${escapeHtml(block.text || "")}</pre>
+    </section>
+  `).join("\n");
+  return `<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(payload.title)}</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#090b12;color:#f4f0df;line-height:1.55;margin:0;padding:32px}
+    section{border:2px solid #f4f0df;margin:0 0 18px;padding:18px;background:#111827}
+    h1,h2{margin:0 0 12px;text-transform:uppercase}
+    pre{white-space:pre-wrap;font-family:Arial,sans-serif}
+    .meta{color:#57ff9a;font-weight:700}
+    a{color:#39c7ff}
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(payload.title)}</h1>
+  <p>Export: ${escapeHtml(payload.exportedAt)}</p>
+  ${blocks}
+</body>
+</html>`;
+}
+
+function downloadFile(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function renderSliderTimeline() {
   const mount = document.getElementById("sliderTimeline");
   if (!mount) return;
@@ -553,6 +782,7 @@ function renderSummary() {
   const cards = [
     ["Affektantworten", list(state.choices.affect_check)],
     ["Text-Hacks", state.hacks.length ? `${state.hacks.length} gespeicherte Eingriffe` : "Noch kein Hack"],
+    ["Renovierte Fassung", state.montage.length ? `${state.montage.length} montierte Blöcke` : "Noch keine Montage"],
     ["Reglerstände", state.sliderHistory.length ? `${state.sliderHistory.length} gespeicherte Builds` : "Noch kein Verlauf"],
     ["Textstellen", [state.fields.sympathy_quote, state.fields.disturbing_quote].filter(Boolean).join("\n\n") || "Noch keine Textstellen"],
     ["Gegenwartsanalogie", state.fields.present_analogy || "Noch offen"],
@@ -570,20 +800,12 @@ function list(items = []) {
 
 function exportData(type) {
   const payload = {
-    title: "Du sollst nicht weinen, du sollst denken",
+    title: "Courage.exe renovieren",
     exportedAt: new Date().toISOString(),
     data: state
   };
   const content = type === "json" ? JSON.stringify(payload, null, 2) : toText(payload);
-  const blob = new Blob([content], { type: type === "json" ? "application/json" : "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `brecht-maschine-export.${type}`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  downloadFile(`brecht-maschine-export.${type}`, content, type === "json" ? "application/json" : "text/plain;charset=utf-8");
 }
 
 function toText(payload) {
@@ -613,6 +835,8 @@ function toText(payload) {
   payload.data.hacks.forEach((hack, index) => {
     lines.push(`Hack ${index + 1} (${hack.operation})\n${hack.output}`);
   });
+  lines.push("\nRENOVIERTE FASSUNG");
+  lines.push(renovationText({ title: "Renovierte Courage-Fassung", exportedAt: payload.exportedAt, blocks: payload.data.montage || [] }));
   return lines.join("\n");
 }
 
@@ -709,6 +933,7 @@ function bindEvents() {
     if (target.dataset.action === "open-reader") showSection("reader");
     if (target.dataset.action === "start-machine") showSection("plot");
     if (target.dataset.action === "next-module") nextSection(target.dataset.current);
+    if (target.dataset.sourceId) selectSource(target.dataset.sourceId);
     if (target.dataset.action === "complete-module") {
       state.completed[target.dataset.module] = true;
       saveState();
@@ -716,6 +941,16 @@ function bindEvents() {
     if (target.dataset.action === "save-slider-snapshot") saveSliderSnapshot();
     if (target.dataset.action === "save-hack") saveHack();
     if (target.dataset.hack) runHack(target.dataset.hack);
+    if (target.dataset.action === "source-to-hack") sourceToHack();
+    if (target.dataset.action === "source-to-montage") sourceToMontage();
+    if (target.dataset.action === "hack-to-montage") hackToMontage();
+    if (target.dataset.action === "add-custom-block") addCustomBlock();
+    if (target.dataset.action === "move-block-up") moveBlock(target.dataset.blockId, -1);
+    if (target.dataset.action === "move-block-down") moveBlock(target.dataset.blockId, 1);
+    if (target.dataset.action === "delete-block") deleteBlock(target.dataset.blockId);
+    if (target.dataset.action === "export-renovation-txt") exportRenovation("txt");
+    if (target.dataset.action === "export-renovation-json") exportRenovation("json");
+    if (target.dataset.action === "export-renovation-html") exportRenovation("html");
     if (target.dataset.action === "generate-concept") generateConcept();
     if (target.dataset.action === "export-json") exportData("json");
     if (target.dataset.action === "export-txt") exportData("txt");
@@ -726,6 +961,13 @@ function bindEvents() {
       const dialog = document.getElementById("interruptDialog");
       document.getElementById("interruptText").textContent = target.dataset.text || "Die Illusion wird unterbrochen.";
       if (dialog.showModal) dialog.showModal();
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    const target = event.target;
+    if (target.matches("[data-source-search]")) {
+      renderSourceReader(target.value);
     }
   });
 }

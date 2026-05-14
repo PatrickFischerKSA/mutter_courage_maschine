@@ -18,6 +18,7 @@
       <div class="top-actions" aria-label="Globale Aktionen">
         <button class="ghost-button" type="button" data-action="open-reader">Text öffnen</button>
         <button class="primary-button" type="button" data-action="start-machine">Spiel starten</button>
+        <button class="warning-button" type="button" data-action="reset-all">Spielstand löschen</button>
       </div>
     </header>
 
@@ -74,6 +75,68 @@
       </section>
 
       <div id="moduleMount"></div>
+
+      <section id="dramaturgy" class="machine-section" aria-labelledby="dramaturgyTitle">
+        <div class="section-kicker">Dramaturgie-Tool</div>
+        <h2 id="dramaturgyTitle">Renovierungswerkbank: Original zerlegen, neu montieren</h2>
+        <p class="section-lead">
+          Der PDF-Text ist als dynamischer Korpus ausgelesen. Suche eine Stelle, übernimm sie als Material,
+          kombiniere sie mit Hacks, neuen Texten und Video-Verweisen. Am Ende exportierst du daraus eine neue Courage-Fassung.
+        </p>
+
+        <div class="dramaturgy-grid">
+          <article class="source-panel">
+            <h3>Source Reader</h3>
+            <label class="question-block" for="sourceSearch">Originaltext durchsuchen</label>
+            <input id="sourceSearch" type="text" placeholder="z.B. Krieg, Courage, Kattrin, Geschäft, Frieden" data-source-search>
+            <div id="sourceResults" class="source-results" aria-live="polite"></div>
+            <div class="source-preview">
+              <div class="screen-label">Ausgewähltes Fragment</div>
+              <pre id="sourcePreview">Noch kein Fragment gewählt.</pre>
+              <div class="button-row">
+                <button type="button" class="primary-button" data-action="source-to-hack">In Hack-Labor übernehmen</button>
+                <button type="button" class="ghost-button" data-action="source-to-montage">Als Originalblock montieren</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="composer-panel">
+            <h3>Neue Materialien einfügen</h3>
+            <div class="form-grid two-column">
+              <label class="question-block" for="blockTitle">Blocktitel<input id="blockTitle" type="text" data-field="block_title" placeholder="z.B. Drohnen-Feed, Kattrin-Alarm, Courage-Shop"></label>
+              <label class="question-block" for="blockType">Typ<select id="blockType" data-field="block_type">
+                <option>Neuer Szenentext</option>
+                <option>Regieanweisung</option>
+                <option>Video-Verweis</option>
+                <option>Kommentar-Overlay</option>
+                <option>Song-Sample</option>
+              </select></label>
+            </div>
+            <div class="question-block">
+              <label for="blockText">Text / Regie / Kommentar</label>
+              <textarea id="blockText" data-field="block_text" placeholder="Schreibe den neuen Text, die Regieanweisung oder das Overlay."></textarea>
+            </div>
+            <div class="question-block">
+              <label for="blockVideo">Video-URL oder Dateiname</label>
+              <input id="blockVideo" type="text" data-field="block_video" placeholder="https://... oder assets/video/datei.mp4">
+            </div>
+            <div class="button-row">
+              <button type="button" class="primary-button" data-action="add-custom-block">Material in Fassung einfügen</button>
+              <button type="button" class="ghost-button" data-action="hack-to-montage">Letzten Hack montieren</button>
+            </div>
+          </article>
+        </div>
+
+        <article class="renovation-panel">
+          <h3>Renovierte Courage-Fassung</h3>
+          <div id="montageList" class="montage-list" aria-live="polite"></div>
+          <div class="button-row">
+            <button type="button" class="primary-button" data-action="export-renovation-txt">Fassung als TXT exportieren</button>
+            <button type="button" class="ghost-button" data-action="export-renovation-json">Fassung als JSON exportieren</button>
+            <button type="button" class="ghost-button" data-action="export-renovation-html">Fassung als HTML exportieren</button>
+          </div>
+        </article>
+      </section>
 
       <section id="machine" class="machine-section" aria-labelledby="machineTitle">
         <div class="section-kicker">Modul 9</div>
@@ -133,6 +196,7 @@
       </form>
     </dialog>
 
+    <script src="assets/data/courage-text.js"></script>
     <script src="assets/js/app.js"></script>
   </body>
 </html>
