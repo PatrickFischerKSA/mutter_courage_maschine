@@ -85,9 +85,9 @@
         </p>
         <div class="flow-strip" aria-label="Arbeitsablauf">
           <span>1 Quelle wählen</span>
-          <span>2 Wirkung entscheiden</span>
+          <span>2 Makrostruktur setzen</span>
           <span>3 Preview schärfen</span>
-          <span>4 In Fassung übernehmen</span>
+          <span>4 Korpusvergleich</span>
           <span>5 Exportieren</span>
         </div>
 
@@ -156,6 +156,15 @@
                 <option>Poetischer Störtext</option>
                 <option>Kaltes Regieprotokoll</option>
               </select></label>
+              <label class="question-block compact-field" for="macroMode">Szenenauftakt / Moritat ersetzen durch<select id="macroMode" data-field="macro_mode">
+                <option>Moritat kalt erneuern</option>
+                <option>Nachrichten-Lead</option>
+                <option>Kriegsbilanz / Kontoauszug</option>
+                <option>Tribunal-Anklage</option>
+                <option>Game-Missionsbriefing</option>
+                <option>Stummfilmtafel</option>
+                <option>Algorithmus-Warnung</option>
+              </select></label>
             </div>
             <div class="question-block compact-field">
               <label for="blockText">Rohmaterial / eigene Zusätze</label>
@@ -167,6 +176,7 @@
             </div>
             <div class="button-row">
               <button type="button" class="primary-button large-action" data-action="generate-preview">Preview bauen</button>
+              <button type="button" class="primary-button large-action" data-action="generate-macro-preview">Moritaten-Alternative bauen</button>
               <button type="button" class="ghost-button" data-action="hack-to-montage">Letzten Hack montieren</button>
             </div>
             <div class="preview-editor">
@@ -204,6 +214,14 @@
           <div class="step-badge">5</div>
           <h3>Fassung exportieren</h3>
           <div id="montageList" class="montage-list" aria-live="polite"></div>
+          <div class="compiled-output">
+            <div class="screen-label">Modifizierte Textgestalt</div>
+            <pre id="compiledOutput">Noch keine montierte Fassung.</pre>
+          </div>
+          <div class="corpus-compare">
+            <div class="screen-label">4 Korpusvergleich: Originalfassung vs. Neufassung</div>
+            <div id="corpusCompareOutput" aria-live="polite"></div>
+          </div>
           <div class="button-row">
             <button type="button" class="primary-button" data-action="export-renovation-txt">Fassung als TXT exportieren</button>
             <button type="button" class="ghost-button" data-action="export-renovation-json">Fassung als JSON exportieren</button>

@@ -824,6 +824,28 @@ input[type="range"] {
   margin: 10px 0;
 }
 
+.compiled-output,
+.corpus-compare {
+  border: 2px solid var(--blue);
+  background: #05070d;
+  padding: 14px;
+  margin: 14px 0;
+}
+
+.compiled-output pre {
+  max-height: 420px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: "Courier New", monospace;
+  color: var(--yellow);
+}
+
+.corpus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
 .preview-editor {
   border: 2px solid var(--blue);
   background: #05070d;

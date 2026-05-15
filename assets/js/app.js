@@ -1,4 +1,4 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v8";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v10";
 const sourceCorpus = window.COURAGE_TEXT || [];
 const stopwords = new Set("der die das den dem des ein eine einer einem einen und oder aber doch nur auch zu in im am an auf mit von für als ist sind war waren wird werden es er sie wir ihr ich man nicht kein keine so da wo wie was wenn dann".split(" "));
 
@@ -398,6 +398,8 @@ function hydrate() {
   renderHackArchive();
   renderSourceReader();
   renderMontage();
+  renderCompiledOutput();
+  renderCorpusCompare();
   renderStylometry();
   renderSliderTimeline();
   renderSummary();
@@ -556,6 +558,8 @@ function addMontageBlock(block) {
   state.completed.dramaturgy = true;
   saveState();
   renderMontage();
+  renderCompiledOutput();
+  renderCorpusCompare();
   renderSummary();
 }
 
@@ -606,6 +610,86 @@ function generatePreview() {
   saveState();
   renderStyleReport();
   renderStylometry();
+}
+
+function generateMacroPreview() {
+  const selected = getSelectedSource();
+  const sourceText = selected ? selected.text : (state.fields.block_text || "");
+  const mode = state.fields.macro_mode || "Moritat kalt erneuern";
+  const target = state.fields.decision_target || "Krieg als Geschäft sichtbar machen";
+  const medium = state.fields.decision_medium || "Nachrichten-Ticker";
+  const audience = state.fields.decision_audience || "Es soll Distanz gewinnen";
+  const moritat = extractMoritat(sourceText);
+  const macro = macroStructureText({ mode, target, medium, audience, moritat, sourceText });
+  state.previewText = macro;
+  const preview = document.getElementById("previewText");
+  if (preview) preview.value = macro;
+  saveState();
+  renderStyleReport();
+  renderStylometry();
+}
+
+function extractMoritat(text = "") {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  const firstStagePlace = normalized.search(/\b(Landstraße|Auf dem|In einem|Vor dem|Man hört|Mutter Courage|DER WERBER|DER FELDWEBEL)\b/);
+  const head = firstStagePlace > 120 ? normalized.slice(0, firstStagePlace) : normalized.slice(0, 520);
+  return head || normalized.slice(0, 520);
+}
+
+function macroStructureText({ mode, target, medium, audience, moritat, sourceText }) {
+  const facts = compressFacts(moritat || sourceText);
+  const systemLine = `Ziel: ${target}. Medium: ${medium}. Publikum: ${audience}.`;
+  const variants = {
+    "Moritat kalt erneuern": [
+      "MORITAT 2.0 / NICHT SINGEN, SONDERN VORFÜHREN",
+      facts,
+      "Wer jetzt Mitleid erwartet, bekommt zuerst die Rechnung.",
+      systemLine
+    ],
+    "Nachrichten-Lead": [
+      "BREAKING / KRIEGSLAGE",
+      facts,
+      "Einzelne Menschen erscheinen als Schicksal. Die Redaktion markiert: Es handelt sich um ein Geschäftsmodell.",
+      systemLine
+    ],
+    "Kriegsbilanz / Kontoauszug": [
+      "KONTOAUSZUG DER SZENE",
+      `Einnahmen: Schuhe, Schutz, Durchkommen. Ausgaben: Kinder, Körper, Urteilskraft. Buchungstext: ${facts}`,
+      "Saldo: Gewinn unklar, Verlust garantiert.",
+      systemLine
+    ],
+    "Tribunal-Anklage": [
+      "ANKLAGE VOR DEM PUBLIKUM",
+      facts,
+      "Angeklagt sind nicht nur die Figuren. Angeklagt ist eine Ordnung, in der Überleben kaufmännisch wird.",
+      systemLine
+    ],
+    "Game-Missionsbriefing": [
+      "MISSION BRIEFING",
+      facts,
+      "Questziel: Überleben. Versteckte Kosten: Mitschuld. Fehlermeldung: Moral nicht mitgeliefert.",
+      systemLine
+    ],
+    "Stummfilmtafel": [
+      "ZWISCHENTAFEL",
+      facts,
+      "Keine Stimme erklärt. Ein Satz steht da wie ein Schild. Danach müssen die Körper weiter.",
+      systemLine
+    ],
+    "Algorithmus-Warnung": [
+      "WARNUNG DES EMPFEHLUNGSSYSTEMS",
+      facts,
+      "Dieser Inhalt erzeugt Mitleid. Ähnliche Inhalte erzeugten Passivität. Kritisches Zuschauen wird empfohlen.",
+      systemLine
+    ]
+  };
+  return (variants[mode] || variants["Moritat kalt erneuern"]).join("\n");
+}
+
+function compressFacts(text = "") {
+  const sentences = splitSentences(text).slice(0, 3);
+  if (sentences.length) return sentences.join(" ");
+  return text.slice(0, 360);
 }
 
 function applyDecisionFrame(text) {
@@ -948,6 +1032,104 @@ function renderMontage() {
   `).join("");
 }
 
+function currentRenovationPayload() {
+  return {
+    title: "Renovierte Courage-Fassung",
+    exportedAt: new Date().toISOString(),
+    blocks: state.montage
+  };
+}
+
+function currentRenovationText() {
+  return renovationText(currentRenovationPayload());
+}
+
+function originalCorpusText() {
+  return sourceCorpus.map((item) => item.text).join("\n\n");
+}
+
+function renderCompiledOutput() {
+  const out = document.getElementById("compiledOutput");
+  if (!out) return;
+  out.textContent = state.montage.length ? currentRenovationText() : "Noch keine montierte Fassung.";
+}
+
+function renderCorpusCompare() {
+  const out = document.getElementById("corpusCompareOutput");
+  if (!out) return;
+  if (!state.montage.length) {
+    out.innerHTML = `<p class="section-lead">Noch keine Neufassung zum Vergleichen. Übernimm zuerst eine Preview in die Fassung.</p>`;
+    return;
+  }
+  const comparison = corpusKeyness(originalCorpusText(), currentRenovationText());
+  out.innerHTML = `
+    <div class="corpus-grid">
+      ${keynessCard("Überprofil der Neufassung", comparison.over)}
+      ${keynessCard("Unterprofil gegenüber Original", comparison.under)}
+      ${keynessCard("Auffällige n-Gramme der Neufassung", comparison.ngrams)}
+    </div>
+  `;
+}
+
+function corpusKeyness(originalText, newText) {
+  const original = analyzeStylometry(originalText);
+  const newer = analyzeStylometry(newText);
+  const originalCounts = countItems(original.contentLemmas);
+  const newCounts = countItems(newer.contentLemmas);
+  const vocab = new Set([...originalCounts.keys(), ...newCounts.keys()]);
+  const rows = [];
+  vocab.forEach((lemma) => {
+    const a = newCounts.get(lemma) || 0;
+    const b = originalCounts.get(lemma) || 0;
+    if (a + b < 2) return;
+    const score = logLikelihood(a, Math.max(1, newer.contentLemmas.length), b, Math.max(1, original.contentLemmas.length));
+    const relNew = a / Math.max(1, newer.contentLemmas.length);
+    const relOrig = b / Math.max(1, original.contentLemmas.length);
+    rows.push({ lemma, newCount: a, originalCount: b, score, relNew, relOrig, direction: relNew >= relOrig ? "over" : "under" });
+  });
+  const over = rows.filter((row) => row.direction === "over").sort((a, b) => b.score - a.score).slice(0, 12);
+  const under = rows.filter((row) => row.direction === "under").sort((a, b) => b.score - a.score).slice(0, 12);
+  const grams = ngrams(newer.tokens, 3).slice(0, 12).map(([lemma, count]) => ({ lemma, newCount: count, originalCount: "-", score: count }));
+  return { over, under, ngrams: grams };
+}
+
+function countItems(items) {
+  const counts = new Map();
+  items.forEach((item) => counts.set(item, (counts.get(item) || 0) + 1));
+  return counts;
+}
+
+function logLikelihood(a, sizeA, b, sizeB) {
+  const total = a + b;
+  const expectedA = sizeA * total / (sizeA + sizeB);
+  const expectedB = sizeB * total / (sizeA + sizeB);
+  const partA = a > 0 ? a * Math.log(a / expectedA) : 0;
+  const partB = b > 0 ? b * Math.log(b / expectedB) : 0;
+  return Number((2 * (partA + partB)).toFixed(2));
+}
+
+function keynessCard(title, rows) {
+  return `
+    <article class="stylometry-card">
+      <h4>${title}</h4>
+      ${rows.length ? `
+        <table class="kwic-table">
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <th>${escapeHtml(row.lemma)}</th>
+                <td>neu: ${escapeHtml(row.newCount)}</td>
+                <td>orig: ${escapeHtml(row.originalCount)}</td>
+                <td>G² ${escapeHtml(row.score)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      ` : `<p>Keine deutlichen Unterschiede.</p>`}
+    </article>
+  `;
+}
+
 function videoEmbed(url) {
   const safeUrl = escapeHtml(url);
   if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)) {
@@ -967,20 +1149,20 @@ function moveBlock(id, direction) {
   state.montage.splice(next, 0, block);
   saveState();
   renderMontage();
+  renderCompiledOutput();
+  renderCorpusCompare();
 }
 
 function deleteBlock(id) {
   state.montage = state.montage.filter((block) => block.id !== id);
   saveState();
   renderMontage();
+  renderCompiledOutput();
+  renderCorpusCompare();
 }
 
 function exportRenovation(type) {
-  const payload = {
-    title: "Renovierte Courage-Fassung",
-    exportedAt: new Date().toISOString(),
-    blocks: state.montage
-  };
+  const payload = currentRenovationPayload();
   let content = "";
   let mime = "text/plain;charset=utf-8";
   let extension = type;
@@ -1284,6 +1466,7 @@ function bindEvents() {
     if (target.dataset.action === "hack-to-montage") hackToMontage();
     if (target.dataset.action === "add-custom-block") addCustomBlock();
     if (target.dataset.action === "generate-preview") generatePreview();
+    if (target.dataset.action === "generate-macro-preview") generateMacroPreview();
     if (target.dataset.action === "restyle-preview") restylePreview();
     if (target.dataset.action === "add-preview-block") addPreviewBlock();
     if (target.dataset.action === "run-stylometry") renderStylometry();
