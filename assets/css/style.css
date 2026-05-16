@@ -574,13 +574,31 @@ input[type="range"] {
 }
 
 .avatar-grid .figure-card::before {
-  content: "NPC";
+  content: "Funktion";
   position: absolute;
   right: 8px;
   top: 8px;
   color: var(--green);
   font-size: 0.75rem;
   font-weight: 900;
+}
+
+.macro-decision-panel {
+  border: 3px solid var(--blue);
+  background: #07101c;
+  padding: 16px;
+  margin: 18px 0;
+  box-shadow: 8px 8px 0 rgba(57, 199, 255, 0.18);
+}
+
+.macro-decision-panel h3 {
+  color: var(--yellow);
+  text-transform: uppercase;
+}
+
+.macro-decision-panel > p {
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .meter-card {

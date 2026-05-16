@@ -1,4 +1,4 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v10";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v11";
 const sourceCorpus = window.COURAGE_TEXT || [];
 const stopwords = new Set("der die das den dem des ein eine einer einem einen und oder aber doch nur auch zu in im am an auf mit von für als ist sind war waren wird werden es er sie wir ihr ich man nicht kein keine so da wo wie was wenn dann".split(" "));
 
@@ -20,10 +20,10 @@ const modules = [
       <p>Dreißigjähriger Krieg. Marketenderin. Wagen. Kinder. Krieg als Geschäftsmodell. Das ist der alte Plot-Kern. Deine Frage: Welche Stelle erzeugt heute noch Sog, und welche Stelle braucht einen Hack?</p>
       <p class="scene-link"><a class="text-link" href="${pdfs.courage}#page=1" target="_blank" rel="noopener">Szene 1 im PDF öffnen</a><span>Platzhalter: <code>#page=1</code> später exakt anpassen.</span></p>
       <div class="avatar-grid">
-        ${figureCard("Courage", "NPC oder Boss? Mutter, Händlerin, Überlebensalgorithmus.")}
-        ${figureCard("Eilif", "Recruitable asset. Tapferkeit wird zur Ressource.")}
-        ${figureCard("Schweizerkas", "Low corruption build. Im falschen System tödlich.")}
-        ${figureCard("Kattrin", "Muted character, maximum signal.")}
+        ${figureCard("Courage", "Mutter, Händlerin, Überlebensalgorithmus. Welche Funktion soll in deiner Fassung dominieren?")}
+        ${figureCard("Eilif", "Sohn, Rekrut, Ruhmprodukt. Wird er verführt, verkauft oder bewusst geopfert?")}
+        ${figureCard("Schweizerkas", "Ehrlichkeit im falschen System. Bleibt er naiv, widerständig oder wird er strategischer?")}
+        ${figureCard("Kattrin", "Stumme Figur, maximales Signal. Wird sie Alarm, Gegenfigur oder aktive Saboteurin?")}
         ${figureCard("Militär", "Interface der Gewalt: Formular, Befehl, Versprechen.")}
         ${figureCard("Wagen", "Inventar, Shop, Heimat, Falle.")}
       </div>
@@ -33,7 +33,43 @@ const modules = [
         ${meter("hack_need", "Renovierungsdruck", "Wie stark braucht die Szene einen heutigen Eingriff?")}
       </div>
       ${choices("affect_check", "Erste Reaktion als Spielstatus", ["Mitleid getriggert", "Misstrauen aktiv", "Figur wirkt zu historisch fern", "System wird sichtbar", "Ich will skippen", "Ich bin irritiert, aber wach"])}
-      ${textarea("plot_reaction_reason", "Welche Stelle funktioniert noch, welche Stelle nicht mehr? Begründe als Wirkungsdiagnose, nicht als Inhaltsangabe.")}
+      <div class="macro-decision-panel">
+        <h3>Dramaturgische Weichen: Was wird wirklich verändert?</h3>
+        <p>Diese Entscheidungen sind nicht Dekoration. Sie werden später im Generator als Konsequenzrahmen weitergeführt.</p>
+        <div class="form-grid two-column">
+          <label class="question-block compact-field" for="plotFork">Handlungsgang verändern<select id="plotFork" data-field="plot_fork">
+            <option>Originalgang bleibt, Rahmung wird gestört</option>
+            <option>Eilif verschwindet nicht zufällig, sondern als bewusstes Geschäft</option>
+            <option>Courage erkennt den Mechanismus früher, handelt aber trotzdem weiter</option>
+            <option>Kattrin greift früher aktiv in den Ablauf ein</option>
+            <option>Das Militär erscheint als Plattform/Markt statt als Personenapparat</option>
+            <option>Der Wagen wird zur Hauptfigur: alles wird über Inventar und Preise erzählt</option>
+          </select></label>
+          <label class="question-block compact-field" for="courageShift">Courage verschieben<select id="courageShift" data-field="courage_shift">
+            <option>ambivalent lassen</option>
+            <option>kälter und rechnender machen</option>
+            <option>verletzlicher zeigen, aber ökonomisch nicht entlasten</option>
+            <option>politisch hellsichtiger machen</option>
+            <option>als Geschäftsmodell statt als Person zeigen</option>
+          </select></label>
+          <label class="question-block compact-field" for="eilifShift">Eilif verschieben<select id="eilifShift" data-field="eilif_shift">
+            <option>als verführbaren Sohn zeigen</option>
+            <option>als Produkt militärischer Werbung zeigen</option>
+            <option>als Mittäter früher markieren</option>
+            <option>als Ware im Rekrutierungsmarkt zeigen</option>
+          </select></label>
+          <label class="question-block compact-field" for="kattrinShift">Kattrin verschieben<select id="kattrinShift" data-field="kattrin_shift">
+            <option>als stummen Gegenpol behalten</option>
+            <option>als aktives Warnsystem früher einsetzen</option>
+            <option>ihre Stummheit digital sichtbar machen</option>
+            <option>sie zur Störung der Geschäftslogik machen</option>
+          </select></label>
+        </div>
+        ${textarea("plot_hook_works", "Welche konkrete Stelle zieht noch? Nenne Handlungsmoment, Figur oder Formsignal.")}
+        ${textarea("plot_hook_fails", "Welche Stelle wirkt heute zu fern, zu glatt oder zu museal? Warum?")}
+        ${textarea("plot_change_consequence", "Wenn du diese Weiche stellst: Welche drei späteren Folgen muss deine Fassung konsequent zeigen?")}
+        ${textarea("plot_brecht_risk", "Was darf durch die Veränderung nicht verloren gehen, damit es noch Brecht bleibt?")}
+      </div>
     `
   },
   {
@@ -603,7 +639,7 @@ function generatePreview() {
     state.fields.block_text ? "" : (selected ? selected.text.slice(0, 1200) : "")
   ].join("\n").trim() || "Mutter Courage zieht weiter. Der Krieg läuft. Das Geschäft spricht leise mit.";
   const decisionPatch = applyDecisionFrame(raw);
-  const styled = applyStyleProfile(decisionPatch, state.fields.style_profile || "Brechtischer Duktus");
+  const styled = applyStyleProfile(decisionPatch, fieldValue("style_profile", "Brechtischer Duktus"));
   state.previewText = styled;
   const preview = document.getElementById("previewText");
   if (preview) preview.value = styled;
@@ -615,10 +651,10 @@ function generatePreview() {
 function generateMacroPreview() {
   const selected = getSelectedSource();
   const sourceText = selected ? selected.text : (state.fields.block_text || "");
-  const mode = state.fields.macro_mode || "Moritat kalt erneuern";
-  const target = state.fields.decision_target || "Krieg als Geschäft sichtbar machen";
-  const medium = state.fields.decision_medium || "Nachrichten-Ticker";
-  const audience = state.fields.decision_audience || "Es soll Distanz gewinnen";
+  const mode = fieldValue("macro_mode", "Moritat kalt erneuern");
+  const target = fieldValue("decision_target", "Krieg als Geschäft sichtbar machen");
+  const medium = fieldValue("decision_medium", "Nachrichten-Ticker");
+  const audience = fieldValue("decision_audience", "Es soll Distanz gewinnen");
   const moritat = extractMoritat(sourceText);
   const macro = macroStructureText({ mode, target, medium, audience, moritat, sourceText });
   state.previewText = macro;
@@ -639,6 +675,7 @@ function extractMoritat(text = "") {
 function macroStructureText({ mode, target, medium, audience, moritat, sourceText }) {
   const facts = compressFacts(moritat || sourceText);
   const systemLine = `Ziel: ${target}. Medium: ${medium}. Publikum: ${audience}.`;
+  const continuity = continuityFrame();
   const variants = {
     "Moritat kalt erneuern": [
       "MORITAT 2.0 / NICHT SINGEN, SONDERN VORFÜHREN",
@@ -683,7 +720,11 @@ function macroStructureText({ mode, target, medium, audience, moritat, sourceTex
       systemLine
     ]
   };
-  return (variants[mode] || variants["Moritat kalt erneuern"]).join("\n");
+  return [...(variants[mode] || variants["Moritat kalt erneuern"]), "", continuity].filter(Boolean).join("\n");
+}
+
+function fieldValue(field, fallback = "") {
+  return state.fields[field] || document.querySelector(`[data-field="${field}"]`)?.value || fallback;
 }
 
 function compressFacts(text = "") {
@@ -693,9 +734,9 @@ function compressFacts(text = "") {
 }
 
 function applyDecisionFrame(text) {
-  const target = state.fields.decision_target || "Mitleid sabotieren";
-  const medium = state.fields.decision_medium || "Livestream";
-  const audience = state.fields.decision_audience || "Es soll sich ertappt fühlen";
+  const target = fieldValue("decision_target", "Mitleid sabotieren");
+  const medium = fieldValue("decision_medium", "Livestream");
+  const audience = fieldValue("decision_audience", "Es soll sich ertappt fühlen");
   const frames = {
     "Mitleid sabotieren": "Das Publikum darf sich nicht im warmen Gefühl einrichten. Jede Rührung bekommt ein Preisschild.",
     "Krieg als Geschäft sichtbar machen": "Der Vorgang wird als Handel gezeigt: Ware, Körper, Risiko, Gewinn, Verlust.",
@@ -708,9 +749,22 @@ function applyDecisionFrame(text) {
     `[ENTSCHEIDUNG: ${target}] ${frames[target] || frames["Mitleid sabotieren"]}`,
     `[MEDIUM: ${medium}]`,
     `[PUBLIKUM: ${audience}]`,
+    continuityFrame(),
     "",
     text
   ].join("\n");
+}
+
+function continuityFrame() {
+  const parts = [
+    fieldValue("plot_fork") ? `HANDLUNGSWEICHE: ${fieldValue("plot_fork")}` : "",
+    fieldValue("courage_shift") ? `COURAGE-FOLGE: ${fieldValue("courage_shift")}` : "",
+    fieldValue("eilif_shift") ? `EILIF-FOLGE: ${fieldValue("eilif_shift")}` : "",
+    fieldValue("kattrin_shift") ? `KATTRIN-FOLGE: ${fieldValue("kattrin_shift")}` : "",
+    fieldValue("plot_change_consequence") ? `KONSEQUENZREGEL: ${fieldValue("plot_change_consequence")}` : "",
+    fieldValue("plot_brecht_risk") ? `NICHT VERLIEREN: ${fieldValue("plot_brecht_risk")}` : ""
+  ].filter(Boolean);
+  return parts.length ? parts.join("\n") : "";
 }
 
 function applyStyleProfile(text, profile) {
@@ -764,7 +818,7 @@ function brechtify(sentences) {
 function restylePreview() {
   const base = state.previewText || state.fields.block_text || "";
   if (!base.trim()) return generatePreview();
-  state.previewText = applyStyleProfile(base, state.fields.style_profile || "Brechtischer Duktus");
+  state.previewText = applyStyleProfile(base, fieldValue("style_profile", "Brechtischer Duktus"));
   const preview = document.getElementById("previewText");
   if (preview) preview.value = state.previewText;
   saveState();
