@@ -1,4 +1,6 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v15";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v16";
+const MIN_WORD_PAGES = 10;
+const WORDS_PER_A4_PAGE = 430;
 const sourceCorpus = window.COURAGE_TEXT || [];
 const stopwords = new Set("der die das den dem des ein eine einer einem einen und oder aber doch nur auch zu in im am an auf mit von für als ist sind war waren wird werden es er sie wir ihr ich man nicht kein keine so da wo wie was wenn dann".split(" "));
 
@@ -640,7 +642,7 @@ function generatePreview() {
   const selected = getSelectedSource();
   const raw = [
     state.fields.block_text || "",
-    state.fields.block_text ? "" : (selected ? selected.text.slice(0, 1200) : "")
+    state.fields.block_text ? "" : (selected ? selected.text.slice(0, 4200) : "")
   ].join("\n").trim() || "Mutter Courage zieht weiter. Der Krieg läuft. Das Geschäft spricht leise mit.";
   const decisionPatch = applyDecisionFrame(raw);
   const styled = applyStyleProfile(decisionPatch, fieldValue("style_profile", "Brechtischer Duktus"));
@@ -798,12 +800,12 @@ function applyStyleProfile(text, profile) {
   return text;
 }
 
-function splitSentences(text) {
+function splitSentences(text, limit = 48) {
   return text
     .split(/(?<=[.!?])\s+/)
     .map((s) => s.trim())
     .filter(Boolean)
-    .slice(0, 12);
+    .slice(0, limit);
 }
 
 function brechtify(sentences) {
@@ -1426,6 +1428,10 @@ function exportFinalReport(type) {
     downloadFile("vergleichsbericht-courage.html", html, "text/html;charset=utf-8");
     return;
   }
+  if (type === "doc") {
+    downloadFile("vergleichsbericht-courage-langfassung.doc", finalReportWordHtml(report), "application/msword;charset=utf-8");
+    return;
+  }
   downloadFile("vergleichsbericht-courage.txt", report, "text/plain;charset=utf-8");
 }
 
@@ -1476,6 +1482,10 @@ function exportRenovation(type) {
   } else if (type === "html") {
     content = renovationHtml(payload);
     mime = "text/html;charset=utf-8";
+  } else if (type === "doc") {
+    content = renovationWordHtml(payload);
+    mime = "application/msword;charset=utf-8";
+    extension = "doc";
   } else {
     content = renovationText(payload);
   }
@@ -1526,6 +1536,219 @@ function renovationHtml(payload) {
   ${blocks}
 </body>
 </html>`;
+}
+
+function renovationWordHtml(payload) {
+  const pages = buildLongRenovationPages(payload);
+  return wordDocumentHtml({
+    title: "Renovierte Courage-Fassung",
+    subtitle: `Word-Langfassung / mindestens ${MIN_WORD_PAGES} A4-Seiten`,
+    pages
+  });
+}
+
+function finalReportWordHtml(report) {
+  const pages = buildLongReportPages(report);
+  return wordDocumentHtml({
+    title: "Vergleichsbericht Original vs. renovierte Courage-Fassung",
+    subtitle: `Anna-Liza/DILAiTS-inspirierte Langfassung / mindestens ${MIN_WORD_PAGES} A4-Seiten`,
+    pages
+  });
+}
+
+function wordDocumentHtml({ title, subtitle, pages }) {
+  const body = pages.map((page, index) => `
+    <section class="page">
+      <p class="folio">Seite ${index + 1} / ${Math.max(MIN_WORD_PAGES, pages.length)}</p>
+      <h1>${escapeHtml(page.heading)}</h1>
+      ${page.subheading ? `<h2>${escapeHtml(page.subheading)}</h2>` : ""}
+      ${page.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("\n")}
+    </section>
+  `).join("\n");
+  return `<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(title)}</title>
+  <style>
+    @page { size: A4; margin: 2.2cm 2cm 2.2cm 2cm; }
+    body { font-family: "Times New Roman", serif; color: #111; background: #fff; line-height: 1.28; font-size: 12pt; }
+    .cover { page-break-after: always; min-height: 24cm; display: block; }
+    .cover h1 { font-size: 28pt; margin: 6cm 0 1cm; text-transform: uppercase; }
+    .cover p { font-size: 14pt; }
+    .page { page-break-after: always; min-height: 24.2cm; }
+    .folio { font-family: Arial, sans-serif; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; color: #555; border-bottom: 1px solid #999; padding-bottom: 4pt; }
+    h1 { font-family: Arial, sans-serif; font-size: 18pt; margin: 14pt 0 8pt; text-transform: uppercase; }
+    h2 { font-family: Arial, sans-serif; font-size: 12pt; margin: 0 0 12pt; color: #333; }
+    p { margin: 0 0 8pt; text-align: justify; }
+    .note { font-family: Arial, sans-serif; border: 1px solid #111; padding: 10pt; text-align: left; }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <h1>${escapeHtml(title)}</h1>
+    <p>${escapeHtml(subtitle)}</p>
+    <p>Export: ${escapeHtml(new Date().toLocaleString("de-CH"))}</p>
+    <p class="note">Dieses Dokument wird lokal aus den gespeicherten Eingriffen, der Montage, den Entscheidungsfragen und dem dynamischen Originalkorpus erzeugt. Die Länge ist bewusst nicht Preview-kurz, sondern als ausarbeitbare dramaturgische Fassung angelegt.</p>
+  </section>
+  ${body}
+</body>
+</html>`;
+}
+
+function buildLongRenovationPages(payload) {
+  const pages = [];
+  const blocks = payload.blocks.length ? payload.blocks : fallbackMontageBlocks();
+  const continuity = continuityFrame() || "Keine explizite Handlungsweiche gesetzt. Die Fassung hält dennoch fest: Jede Szene muss zeigen, dass Krieg nicht Hintergrund, sondern Produktionsbedingung ist.";
+  const fields = renovationDecisionLines();
+  pages.push({
+    heading: "0. Renovierungsvertrag",
+    subheading: "Was diese Fassung mit dem Original macht",
+    paragraphs: expandParagraphs([
+      "Diese Langfassung behandelt Mutter Courage nicht als abgeschlossenes Museumsstück, sondern als Material, das unter heutigen Wahrnehmungsbedingungen wieder gefährlich gemacht werden muss.",
+      "Die Renovierung verfolgt nicht die Behauptung, dass der alte Text falsch sei. Sie geht von der riskanteren Annahme aus: Das Publikum ist anders geworden, darum müssen die Mittel verschoben werden, wenn der kritische Effekt erhalten bleiben soll.",
+      continuity,
+      fields.join(" ")
+    ], WORDS_PER_A4_PAGE + 90)
+  });
+  blocks.forEach((block, index) => {
+    pages.push(buildRenovationBlockPage(block, index, "Szenischer Block"));
+    if (pages.length < MIN_WORD_PAGES) {
+      pages.push(buildRenovationBlockPage(block, index, "Folgenprotokoll"));
+    }
+  });
+  let sourceIndex = 0;
+  while (pages.length < MIN_WORD_PAGES) {
+    const source = sourceCorpus[sourceIndex % Math.max(1, sourceCorpus.length)];
+    pages.push(buildSourceExpansionPage(source, sourceIndex));
+    sourceIndex += 1;
+  }
+  return pages.slice(0, Math.max(MIN_WORD_PAGES, pages.length));
+}
+
+function fallbackMontageBlocks() {
+  const selected = getSelectedSource();
+  const base = state.previewText || state.fields.block_text || selected?.text || "Mutter Courage zieht durch eine Landschaft, in der jede Rettung eine Rechnung bekommt.";
+  return [{
+    title: "Nicht montierte Preview als Langfassungsgrundlage",
+    type: fieldValue("block_type", "Neuer Szenentext"),
+    source: selected ? `Originalfragment ${selected.id}` : "Preview / Notmaterial",
+    video: state.fields.block_video || "",
+    text: base
+  }];
+}
+
+function buildRenovationBlockPage(block, index, mode) {
+  const source = sourceCorpus[index % Math.max(1, sourceCorpus.length)] || {};
+  const text = block.text || source.text || "";
+  const sourceSeed = compressFacts(source.text || text);
+  const intervention = [
+    `Blocktyp: ${block.type || "Material"}. Quelle: ${block.source || "Werkbank"}.`,
+    block.video ? `Medieneinschub: ${block.video}.` : "Kein Medienverweis gesetzt; die Störung muss also durch Schrift, Schnitt, Haltung und sichtbare Oberfläche entstehen.",
+    `Entscheidungsziel: ${fieldValue("decision_target", "Krieg als Geschäft sichtbar machen")}.`,
+    `Sprachmodus: ${fieldValue("style_profile", "Brechtischer Duktus")}.`,
+    `Makrostruktur: ${fieldValue("macro_mode", "Moritat kalt erneuern")}.`
+  ].join(" ");
+  const paragraphs = expandParagraphs([
+    text,
+    `Dieser Abschnitt wird als ${mode} geführt. Er darf nicht nur erzählen, was geschieht, sondern muss zeigen, unter welchen Bedingungen die Handlung plausibel, profitabel oder unerträglich wird.`,
+    intervention,
+    `Originalspur als Materialkern: ${sourceSeed}`,
+    "Die Szene muss bei jeder emotionalen Bewegung einen zweiten Kanal öffnen: Was kostet diese Bewegung, wer bezahlt sie, wer verwertet sie, und warum scheint sie den Figuren dennoch vernünftig?",
+    "Die Figuren dürfen nicht in psychologische Innenräume verschwinden. Courage wird als Verhalten unter Druck gezeigt, Eilif als Effekt einer Rekrutierungslogik, Kattrin als Signal, das nicht in Sprache aufgelöst werden darf."
+  ], WORDS_PER_A4_PAGE + 70);
+  return {
+    heading: `${index + 1}. ${block.title || "Montageblock"}`,
+    subheading: mode,
+    paragraphs
+  };
+}
+
+function buildSourceExpansionPage(source = {}, index) {
+  const sceneLabel = source.label || `Quellfragment ${index + 1}`;
+  const seed = source.text || "Der Krieg setzt die Figuren in Bewegung. Das Geschäft behauptet, es sei nur Überleben.";
+  const macro = macroStructureText({
+    mode: fieldValue("macro_mode", "Moritat kalt erneuern"),
+    target: fieldValue("decision_target", "Krieg als Geschäft sichtbar machen"),
+    medium: fieldValue("decision_medium", "Game-HUD"),
+    audience: fieldValue("decision_audience", "Es soll Distanz gewinnen"),
+    moritat: seed,
+    sourceText: seed
+  });
+  return {
+    heading: `Zusatzszene ${index + 1}: ${sceneLabel}`,
+    subheading: "Automatisch verlängerte dramaturgische Konsequenz",
+    paragraphs: expandParagraphs([
+      macro,
+      `Aus dem Originalkorpus wird nicht ehrfürchtig zitiert, sondern ein Arbeitsdruck gewonnen: ${compressFacts(seed)}`,
+      "Die Renovierung führt die gesetzten Weichen weiter. Wenn eine Figur kälter, aktiver oder systemischer gesetzt wurde, darf sie im nächsten Abschnitt nicht wieder zufällig in die alte Psychologie zurückfallen.",
+      "Die Bühne zeigt die Rechnung mit. Preise, Routen, Waren, Körper, Kinder, Gerüchte und Befehle erscheinen nicht als Hintergrund, sondern als die eigentlichen Sprechpartner der Szene.",
+      "Das Publikum bekommt keinen stabilen Trost. Jede Stelle, die Mitleid erzeugt, muss eine Gegenfrage mitliefern: Was hat dieses Mitleid gerade verdeckt?"
+    ], WORDS_PER_A4_PAGE + 90)
+  };
+}
+
+function renovationDecisionLines() {
+  return [
+    `Handlungsweiche: ${fieldValue("plot_fork", "Originalgang bleibt, Rahmung wird gestört")}.`,
+    `Courage: ${fieldValue("courage_shift", "ambivalent lassen")}.`,
+    `Eilif: ${fieldValue("eilif_shift", "als verführbaren Sohn zeigen")}.`,
+    `Kattrin: ${fieldValue("kattrin_shift", "als stummen Gegenpol behalten")}.`,
+    `Konsequenzen: ${fieldValue("plot_change_consequence", "Die spätere Fassung muss jede Veränderung als Folgedruck sichtbar machen.")}.`,
+    `Brecht-Risiko: ${fieldValue("plot_brecht_risk", "Die Aktualisierung darf nicht zur bloßen Gegenwartstapete werden.")}.`
+  ];
+}
+
+function buildLongReportPages(report) {
+  const baseSections = report.split(/\n(?=\d+\.\s|VERGLEICHSBERICHT|Methode:)/).filter(Boolean);
+  const pages = baseSections.map((section, index) => ({
+    heading: index === 0 ? "Vergleichsbericht" : `Analyseblatt ${index}`,
+    subheading: "Korpuslinguistische und dramaturgische Differenz",
+    paragraphs: expandParagraphs(section.split("\n").filter(Boolean), WORDS_PER_A4_PAGE + 50)
+  }));
+  while (pages.length < MIN_WORD_PAGES) {
+    const index = pages.length;
+    const comparison = corpusKeyness(originalCorpusText(), currentRenovationText());
+    const over = comparison.over.map((row) => `${row.lemma} erscheint in der Neufassung auffällig stark: neu ${row.newCount}, original ${row.originalCount}, G² ${row.score}.`).join(" ");
+    const under = comparison.under.map((row) => `${row.lemma} tritt gegenüber dem Original zurück: neu ${row.newCount}, original ${row.originalCount}, G² ${row.score}.`).join(" ");
+    pages.push({
+      heading: `Analyseblatt ${index}`,
+      subheading: "Vertiefung für die Word-Langfassung",
+      paragraphs: expandParagraphs([
+        over || "Es gibt kein starkes Überprofil; die Fassung muss ihre eigenen Leitwörter noch deutlicher setzen.",
+        under || "Es gibt kein starkes Unterprofil; die Distanz zum Original bleibt sprachlich noch begrenzt.",
+        contentDifferenceReport(),
+        "Entscheidend ist nicht die bloße Länge des Dokuments, sondern ob die Differenzen nachvollziehbar werden: lexikalisch, syntaktisch, makrostrukturell und in der Figurenführung."
+      ], WORDS_PER_A4_PAGE + 70)
+    });
+  }
+  return pages;
+}
+
+function expandParagraphs(parts, targetWords) {
+  const clean = parts
+    .join("\n")
+    .split(/\n+/)
+    .map((part) => part.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+  const expansion = [
+    "Regiehinweis: Die Oberfläche bleibt sichtbar künstlich. Kein glattes Einfühlen, keine Musik, die das Urteil ersetzt, kein Close-up, das die gesellschaftliche Frage privatisiert.",
+    "Publikumsauftrag: Wer hier zusieht, soll sich nicht fragen, ob die Figur sympathisch ist, sondern welche Ordnung diese Handlung hervorbringt und belohnt.",
+    "Makrofolge: Der Szenenauftakt darf die Handlung nicht nur zusammenfassen. Er muss als Schild, Kontoauszug, Warnung, Mission oder Anklage funktionieren.",
+    "Figurenfolge: Eine gesetzte Charakterverschiebung wird weitergeführt. Courage bleibt an Geschäft und Verlust gebunden, Kattrin bleibt ein Signal gegen die Beruhigung, Eilif bleibt ein Produkt der Kriegsverwertung.",
+    "Korpusspur: Wiederkehrende Wörter sollen nicht zufällig sein. Krieg, Geschäft, Preis, Körper, Kind, Ware, Stimme, Befehl und Verlust bilden das semantische Raster der Neufassung."
+  ];
+  const result = clean.length ? [...clean] : ["Noch kein Material vorhanden. Die Langfassung erzeugt ein Arbeitsblatt, das die fehlenden Entscheidungen sichtbar macht."];
+  let guard = 0;
+  while (wordCount(result.join(" ")) < targetWords && guard < 30) {
+    result.push(expansion[guard % expansion.length]);
+    guard += 1;
+  }
+  return result;
+}
+
+function wordCount(text = "") {
+  return (text.match(/\b[\p{L}\p{N}][\p{L}\p{N}'-]*\b/gu) || []).length;
 }
 
 function downloadFile(filename, content, mime) {
@@ -1787,12 +2010,14 @@ function bindEvents() {
     if (target.dataset.action === "export-renovation-txt") exportRenovation("txt");
     if (target.dataset.action === "export-renovation-json") exportRenovation("json");
     if (target.dataset.action === "export-renovation-html") exportRenovation("html");
+    if (target.dataset.action === "export-renovation-doc") exportRenovation("doc");
     if (target.dataset.action === "generate-concept") generateConcept();
     if (target.dataset.action === "export-json") exportData("json");
     if (target.dataset.action === "export-txt") exportData("txt");
     if (target.dataset.action === "generate-final-report") generateFinalReport();
     if (target.dataset.action === "export-final-report-txt") exportFinalReport("txt");
     if (target.dataset.action === "export-final-report-html") exportFinalReport("html");
+    if (target.dataset.action === "export-final-report-doc") exportFinalReport("doc");
     if (target.dataset.action === "refresh-teacher") renderTeacher();
     if (target.dataset.action === "reset-all") resetAll();
     if (target.dataset.action === "play-drum") playDrum();
