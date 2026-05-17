@@ -905,6 +905,23 @@ input[type="range"] {
   box-shadow: 8px 8px 0 rgba(255, 51, 92, 0.22);
 }
 
+.war-mode-panel.is-highlighted {
+  animation: warPulse 650ms ease-in-out 3;
+}
+
+@keyframes warPulse {
+  0%,
+  100% {
+    box-shadow: 8px 8px 0 rgba(255, 51, 92, 0.22);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 6px rgba(255, 228, 92, 0.52),
+      14px 14px 0 rgba(255, 51, 92, 0.35);
+  }
+}
+
 .war-mode-panel h3 {
   color: var(--yellow);
   text-transform: uppercase;

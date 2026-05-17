@@ -1,4 +1,4 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v14";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v15";
 const sourceCorpus = window.COURAGE_TEXT || [];
 const stopwords = new Set("der die das den dem des ein eine einer einem einen und oder aber doch nur auch zu in im am an auf mit von für als ist sind war waren wird werden es er sie wir ihr ich man nicht kein keine so da wo wie was wenn dann".split(" "));
 
@@ -1759,6 +1759,7 @@ function bindEvents() {
     if (target.matches("[data-target]")) showSection(target.dataset.target);
     if (target.dataset.action === "open-reader") showSection("reader");
     if (target.dataset.action === "start-machine") showSection("plot");
+    if (target.dataset.action === "open-war-mode") openWarMode();
     if (target.dataset.action === "next-module") nextSection(target.dataset.current);
     if (target.dataset.sourceId) selectSource(target.dataset.sourceId);
     if (target.dataset.action === "complete-module") {
@@ -1808,6 +1809,17 @@ function bindEvents() {
       renderSourceReader(target.value);
     }
   });
+}
+
+function openWarMode() {
+  showSection("dramaturgy");
+  window.setTimeout(() => {
+    const panel = document.getElementById("warModePanel");
+    if (!panel) return;
+    panel.scrollIntoView({ behavior: "smooth", block: "center" });
+    panel.classList.add("is-highlighted");
+    window.setTimeout(() => panel.classList.remove("is-highlighted"), 2000);
+  }, 120);
 }
 
 renderModules();
