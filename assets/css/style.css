@@ -864,6 +864,30 @@ input[type="range"] {
   gap: 12px;
 }
 
+.final-report-panel {
+  border: 3px solid var(--green);
+  background: #07101c;
+  padding: 16px;
+  margin: 18px 0;
+}
+
+.final-report-panel pre {
+  max-height: 520px;
+  overflow: auto;
+  white-space: pre-wrap;
+  border: 2px solid var(--line);
+  background: #05070d;
+  color: var(--yellow);
+  padding: 14px;
+  font-family: "Courier New", monospace;
+}
+
+.reflection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .preview-editor {
   border: 2px solid var(--blue);
   background: #05070d;
@@ -1055,6 +1079,7 @@ input[type="range"] {
   .pdf-grid,
   .two-column,
   .contrast-grid,
+  .reflection-grid,
   .dramaturgy-grid {
     grid-template-columns: 1fr;
   }

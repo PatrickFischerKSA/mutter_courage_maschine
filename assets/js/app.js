@@ -1,4 +1,4 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v11";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v13";
 const sourceCorpus = window.COURAGE_TEXT || [];
 const stopwords = new Set("der die das den dem des ein eine einer einem einen und oder aber doch nur auch zu in im am an auf mit von für als ist sind war waren wird werden es er sie wir ihr ich man nicht kein keine so da wo wie was wenn dann".split(" "));
 
@@ -346,7 +346,8 @@ function freshState() {
     previewText: "",
     completed: {},
     conceptNotes: {},
-    generatedConcept: ""
+    generatedConcept: "",
+    finalReport: ""
   };
 }
 
@@ -437,6 +438,7 @@ function hydrate() {
   renderCompiledOutput();
   renderCorpusCompare();
   renderStylometry();
+  renderFinalReport();
   renderSliderTimeline();
   renderSummary();
   renderTeacher();
@@ -1184,6 +1186,96 @@ function keynessCard(title, rows) {
   `;
 }
 
+function generateFinalReport() {
+  const original = originalCorpusText();
+  const renovation = currentRenovationText();
+  const originalAnalysis = analyzeStylometry(original);
+  const newAnalysis = analyzeStylometry(renovation);
+  const keyness = corpusKeyness(original, renovation);
+  const content = contentDifferenceReport();
+  const report = [
+    "VERGLEICHSBERICHT: ORIGINALFASSUNG VS. RENOVIERTE COURAGE-FASSUNG",
+    "Methode: Anna-Liza/DILAiTS-inspirierte lokale Analyse mit Token-/Type-Werten, Lemma-Näherung, Keyness, n-Grammen und dramaturgischem Differenzprotokoll.",
+    "",
+    "1. KORPUSSTATISTIK",
+    `Original: ${originalAnalysis.tokenCount} Tokens, ${originalAnalysis.typeCount} Types, TTR ${originalAnalysis.ttr}, Ø Satzlänge ${originalAnalysis.avgSentence}`,
+    `Neufassung: ${newAnalysis.tokenCount} Tokens, ${newAnalysis.typeCount} Types, TTR ${newAnalysis.ttr}, Ø Satzlänge ${newAnalysis.avgSentence}`,
+    "",
+    "2. SIGNIFIKANTE ÜBERPROFILE DER NEUFASSUNG",
+    keyness.over.map((row) => `- ${row.lemma}: neu ${row.newCount}, original ${row.originalCount}, G² ${row.score}`).join("\n") || "- keine deutlichen Überprofile",
+    "",
+    "3. SIGNIFIKANTE UNTERPROFILE GEGENÜBER DEM ORIGINAL",
+    keyness.under.map((row) => `- ${row.lemma}: neu ${row.newCount}, original ${row.originalCount}, G² ${row.score}`).join("\n") || "- keine deutlichen Unterprofile",
+    "",
+    "4. AUFFÄLLIGE N-GRAMME DER NEUFASSUNG",
+    keyness.ngrams.map((row) => `- ${row.lemma}: ${row.newCount}`).join("\n") || "- keine auffälligen Wiederholungen",
+    "",
+    "5. INHALTLICHE UND DRAMATURGISCHE DIFFERENZEN",
+    content,
+    "",
+    "6. REFLEXIONSFRAGEN",
+    `- stärkste Handlungsweiche: ${state.fields.final_plot || "[offen]"}`,
+    `- stärkster Figurenumbau: ${state.fields.final_disturbance || "[offen]"}`,
+    `- Makrostruktur/Moritat: ${state.fields.final_blindspot || "[offen]"}`,
+    `- auffällige Wortfelder: ${state.fields.final_critical_viewing || "[offen]"}`,
+    `- gewollte Inhaltsdifferenzen: ${state.fields.final_courage_understanding || "[offen]"}`,
+    `- Risiko der Renovierung: ${state.fields.final_pity || "[offen]"}`,
+    "",
+    "7. ARBEITSHYPOTHESE",
+    "Die Neufassung ist dann brechtisch stark, wenn ihre Abweichungen nicht nur modern aussehen, sondern die Bedingungen von Krieg, Handel, Verantwortung und Zuschauposition schärfer zeigen als eine bloße Aktualisierung."
+  ].join("\n");
+  state.finalReport = report;
+  saveState();
+  renderFinalReport();
+  renderSummary();
+}
+
+function contentDifferenceReport() {
+  const lines = [];
+  const fieldRows = [
+    ["Handlungsweiche", fieldValue("plot_fork")],
+    ["Courage-Verschiebung", fieldValue("courage_shift")],
+    ["Eilif-Verschiebung", fieldValue("eilif_shift")],
+    ["Kattrin-Verschiebung", fieldValue("kattrin_shift")],
+    ["Konsequenzregel", fieldValue("plot_change_consequence")],
+    ["Brecht-Risiko", fieldValue("plot_brecht_risk")]
+  ].filter(([, value]) => value);
+  fieldRows.forEach(([label, value]) => lines.push(`- ${label}: ${value}`));
+  if (state.montage.length) {
+    lines.push(`- Montageumfang: ${state.montage.length} Blöcke`);
+    topCounts(state.montage.map((block) => block.type || "Material"), 10)
+      .forEach(([type, count]) => lines.push(`- Blocktyp ${type}: ${count}`));
+    const macroBlocks = state.montage.filter((block) => /MORITAT|BREAKING|KONTOAUSZUG|MISSION BRIEFING|ANKLAGE|ZWISCHENTAFEL|WARNUNG/i.test(block.text || ""));
+    if (macroBlocks.length) lines.push(`- Ersetzte/ergänzte Makrostruktur: ${macroBlocks.length} Moritaten- oder Szenenauftakt-Blöcke`);
+    const videoBlocks = state.montage.filter((block) => block.video);
+    if (videoBlocks.length) lines.push(`- Medienintegration: ${videoBlocks.length} Video-/Medienverweise`);
+  } else {
+    lines.push("- Noch keine montierte Neufassung vorhanden.");
+  }
+  return lines.join("\n");
+}
+
+function renderFinalReport() {
+  const out = document.getElementById("finalReportOutput");
+  if (!out) return;
+  out.textContent = state.finalReport || "Noch kein Vergleichsbericht generiert.";
+}
+
+function exportFinalReport(type) {
+  const report = state.finalReport || generateReportTextWithoutSaving();
+  if (type === "html") {
+    const html = `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Vergleichsbericht Courage</title><style>body{font-family:Arial,sans-serif;background:#090b12;color:#f4f0df;line-height:1.55;padding:32px}pre{white-space:pre-wrap;border:2px solid #f4f0df;padding:18px;background:#111827}</style></head><body><pre>${escapeHtml(report)}</pre></body></html>`;
+    downloadFile("vergleichsbericht-courage.html", html, "text/html;charset=utf-8");
+    return;
+  }
+  downloadFile("vergleichsbericht-courage.txt", report, "text/plain;charset=utf-8");
+}
+
+function generateReportTextWithoutSaving() {
+  generateFinalReport();
+  return state.finalReport || "";
+}
+
 function videoEmbed(url) {
   const safeUrl = escapeHtml(url);
   if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)) {
@@ -1351,6 +1443,7 @@ function renderSummary() {
     ["Text-Hacks", state.hacks.length ? `${state.hacks.length} gespeicherte Eingriffe` : "Noch kein Hack"],
     ["Renovierte Fassung", state.montage.length ? `${state.montage.length} montierte Blöcke` : "Noch keine Montage"],
     ["Reglerstände", state.sliderHistory.length ? `${state.sliderHistory.length} gespeicherte Builds` : "Noch kein Verlauf"],
+    ["Vergleichsbericht", state.finalReport ? "generiert" : "noch nicht generiert"],
     ["Textstellen", [state.fields.sympathy_quote, state.fields.disturbing_quote].filter(Boolean).join("\n\n") || "Noch keine Textstellen"],
     ["Gegenwartsanalogie", state.fields.present_analogy || "Noch offen"],
     ["Regiekonzept", state.generatedConcept || "Noch nicht generiert"],
@@ -1404,6 +1497,8 @@ function toText(payload) {
   });
   lines.push("\nRENOVIERTE FASSUNG");
   lines.push(renovationText({ title: "Renovierte Courage-Fassung", exportedAt: payload.exportedAt, blocks: payload.data.montage || [] }));
+  lines.push("\nVERGLEICHSBERICHT");
+  lines.push(payload.data.finalReport || "");
   return lines.join("\n");
 }
 
@@ -1533,6 +1628,9 @@ function bindEvents() {
     if (target.dataset.action === "generate-concept") generateConcept();
     if (target.dataset.action === "export-json") exportData("json");
     if (target.dataset.action === "export-txt") exportData("txt");
+    if (target.dataset.action === "generate-final-report") generateFinalReport();
+    if (target.dataset.action === "export-final-report-txt") exportFinalReport("txt");
+    if (target.dataset.action === "export-final-report-html") exportFinalReport("html");
     if (target.dataset.action === "refresh-teacher") renderTeacher();
     if (target.dataset.action === "reset-all") resetAll();
     if (target.dataset.action === "play-drum") playDrum();

@@ -232,32 +232,44 @@
 
       <section id="machine" class="machine-section" aria-labelledby="machineTitle">
         <div class="section-kicker">Modul 9</div>
-        <h2 id="machineTitle">Final Build: dein Courage-Remix</h2>
-        <p class="section-lead">Hier erscheint kein Arbeitsblatt. Hier erscheint dein Patch-Protokoll: Eingriffe, Samples, Scores, Verdächtigungen, Umbauentscheidungen.</p>
+        <h2 id="machineTitle">Abschlussbericht: Original vs. renovierte Courage-Fassung</h2>
+        <p class="section-lead">Hier entsteht ein Bericht, der die neue Textgestalt mit der Originalfassung vergleicht: korpuslinguistisch, dramaturgisch und inhaltlich.</p>
         <div id="summaryMount" class="summary-wall"></div>
-        <div class="question-block">
-          <label for="final1">Welche Originalstelle war noch wirksam, obwohl sie alt ist?</label>
-          <textarea id="final1" data-field="final_plot"></textarea>
-        </div>
-        <div class="question-block">
-          <label for="final2">Welcher Eingriff hat die stärkste neue Brecht-Wirkung erzeugt?</label>
-          <textarea id="final2" data-field="final_disturbance"></textarea>
-        </div>
-        <div class="question-block">
-          <label for="final3">Welche heutige Wahrnehmungsgewohnheit musste sabotiert werden?</label>
-          <textarea id="final3" data-field="final_blindspot"></textarea>
-        </div>
-        <div class="question-block">
-          <label for="final4">Was bedeutet kritisches Zuschauen, wenn alles schon nach Content aussieht?</label>
-          <textarea id="final4" data-field="final_critical_viewing"></textarea>
-        </div>
-        <div class="question-block">
-          <label for="final5">Wie verändert sich Mutter Courage, wenn man sie als Systemfigur statt als Figur liest?</label>
-          <textarea id="final5" data-field="final_courage_understanding"></textarea>
-        </div>
-        <div class="question-block">
-          <label for="final6">Welche Renovierung braucht Brecht heute, ohne dass Brecht verraten wird?</label>
-          <textarea id="final6" data-field="final_pity"></textarea>
+
+        <article class="final-report-panel">
+          <div class="button-row">
+            <button type="button" class="primary-button large-action" data-action="generate-final-report">Vergleichsbericht generieren</button>
+            <button type="button" class="ghost-button" data-action="export-final-report-txt">Bericht als TXT exportieren</button>
+            <button type="button" class="ghost-button" data-action="export-final-report-html">Bericht als HTML exportieren</button>
+          </div>
+          <pre id="finalReportOutput">Noch kein Vergleichsbericht generiert.</pre>
+        </article>
+
+        <div class="reflection-grid">
+          <div class="question-block">
+            <label for="final1">Welche Handlungsweiche verändert den Verlauf am stärksten?</label>
+            <textarea id="final1" data-field="final_plot"></textarea>
+          </div>
+          <div class="question-block">
+            <label for="final2">Welche Figur wurde am deutlichsten umgebaut, und woran erkennt man das im Text?</label>
+            <textarea id="final2" data-field="final_disturbance"></textarea>
+          </div>
+          <div class="question-block">
+            <label for="final3">Welche Moritaten-/Makrostruktur wurde ersetzt, und welche neue Funktion übernimmt sie?</label>
+            <textarea id="final3" data-field="final_blindspot"></textarea>
+          </div>
+          <div class="question-block">
+            <label for="final4">Welche Wörter, Wortfelder oder n-Gramme treten in der Neufassung auffällig stärker hervor?</label>
+            <textarea id="final4" data-field="final_critical_viewing"></textarea>
+          </div>
+          <div class="question-block">
+            <label for="final5">Welche inhaltlichen Unterschiede zur Originalfassung sind dramaturgisch gewollt?</label>
+            <textarea id="final5" data-field="final_courage_understanding"></textarea>
+          </div>
+          <div class="question-block">
+            <label for="final6">Wo droht die Renovierung Brechts Verfahren zu verfehlen, und wie würdest du gegensteuern?</label>
+            <textarea id="final6" data-field="final_pity"></textarea>
+          </div>
         </div>
         <div class="button-row">
           <button type="button" class="primary-button" data-action="export-txt">Antworten als TXT exportieren</button>
