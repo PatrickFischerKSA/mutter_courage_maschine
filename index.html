@@ -179,6 +179,33 @@
               <button type="button" class="primary-button large-action" data-action="generate-macro-preview">Moritaten-Alternative bauen</button>
               <button type="button" class="ghost-button" data-action="hack-to-montage">Letzten Hack montieren</button>
             </div>
+            <div class="war-mode-panel">
+              <div>
+                <h3>Text im Krieg - krieg deinen Text</h3>
+                <p>Der Text wird nicht geplant, sondern getroffen: Zensur, Flucht, Inflation, Propaganda, Verlust, falsche Rettung. Dieselbe Werkbank, aber der Text erleidet Ereignisse.</p>
+              </div>
+              <div class="form-grid two-column">
+                <label class="question-block compact-field" for="warIntensity">Einschlagsdichte<select id="warIntensity" data-field="war_intensity">
+                  <option>1</option>
+                  <option>2</option>
+                  <option>3</option>
+                  <option>4</option>
+                  <option>5</option>
+                </select></label>
+                <label class="question-block compact-field" for="warBias">Ereignisfeld<select id="warBias" data-field="war_bias">
+                  <option>unberechenbar</option>
+                  <option>Zensur und Propaganda</option>
+                  <option>Flucht und Verlust</option>
+                  <option>Ökonomie und Inflation</option>
+                  <option>Medien und Gerücht</option>
+                </select></label>
+              </div>
+              <div class="button-row">
+                <button type="button" class="warning-button large-action" data-action="war-text">Kriegsereignis auslösen</button>
+                <button type="button" class="ghost-button" data-action="reset-war-log">Ereignisprotokoll leeren</button>
+              </div>
+              <div id="warLog" class="war-log" aria-live="polite">Noch kein Einschlag.</div>
+            </div>
             <div class="preview-editor">
               <div class="screen-label">3 Bearbeitbare Preview</div>
               <textarea id="previewText" data-preview-text placeholder="Hier erscheint die generierte Fassung. Danach händisch schärfen."></textarea>

@@ -895,6 +895,47 @@ input[type="range"] {
   margin-top: 14px;
 }
 
+.war-mode-panel {
+  border: 3px solid var(--red);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 51, 92, 0.18) 0 10px, rgba(5, 7, 13, 0.2) 10px 20px),
+    #120812;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: 8px 8px 0 rgba(255, 51, 92, 0.22);
+}
+
+.war-mode-panel h3 {
+  color: var(--yellow);
+  text-transform: uppercase;
+}
+
+.war-mode-panel p {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.war-log {
+  border: 2px solid var(--line);
+  background: #05070d;
+  color: var(--yellow);
+  padding: 12px;
+  margin-top: 12px;
+  max-height: 220px;
+  overflow: auto;
+  font-family: "Courier New", monospace;
+}
+
+.war-log article {
+  border-bottom: 1px solid rgba(244, 240, 223, 0.35);
+  padding: 8px 0;
+}
+
+.war-log ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+
 .preview-editor textarea {
   min-height: 300px;
   font-family: "Courier New", monospace;

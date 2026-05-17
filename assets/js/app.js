@@ -1,4 +1,4 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v13";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v14";
 const sourceCorpus = window.COURAGE_TEXT || [];
 const stopwords = new Set("der die das den dem des ein eine einer einem einen und oder aber doch nur auch zu in im am an auf mit von für als ist sind war waren wird werden es er sie wir ihr ich man nicht kein keine so da wo wie was wenn dann".split(" "));
 
@@ -347,7 +347,8 @@ function freshState() {
     completed: {},
     conceptNotes: {},
     generatedConcept: "",
-    finalReport: ""
+    finalReport: "",
+    warLog: []
   };
 }
 
@@ -431,6 +432,7 @@ function hydrate() {
   if (hackOutput) hackOutput.textContent = state.fields.hack_output || "Noch kein Eingriff. Der Text wartet auf Beschädigung.";
   const preview = document.getElementById("previewText");
   if (preview) preview.value = state.previewText || "";
+  renderWarLog();
   renderStyleReport();
   renderHackArchive();
   renderSourceReader();
@@ -838,6 +840,162 @@ function addPreviewBlock() {
     video: state.fields.block_video || "",
     source: `Preview-Generator / ${state.fields.style_profile || "ohne Stilprofil"}`
   });
+}
+
+function applyWarMode() {
+  const base = state.previewText || state.fields.block_text || getSelectedSource()?.text?.slice(0, 1800) || "Der Text hat keinen Schutzraum. Der Krieg beginnt trotzdem.";
+  const intensity = Number(fieldValue("war_intensity", "1"));
+  const bias = fieldValue("war_bias", "unberechenbar");
+  let result = base;
+  const events = [];
+  for (let i = 0; i < intensity; i += 1) {
+    const event = pickWarEvent(bias);
+    result = event.apply(result);
+    events.push(event.label);
+  }
+  state.previewText = result;
+  state.warLog.push({
+    at: new Date().toISOString(),
+    bias,
+    intensity,
+    events
+  });
+  const preview = document.getElementById("previewText");
+  if (preview) preview.value = result;
+  saveState();
+  renderWarLog();
+  renderStyleReport();
+  renderStylometry();
+}
+
+function pickWarEvent(bias) {
+  const pools = {
+    "Zensur und Propaganda": ["censor", "propaganda", "renaming", "falseOrder"],
+    "Flucht und Verlust": ["loss", "displacement", "fragment", "silence"],
+    "Ökonomie und Inflation": ["inflation", "inventory", "debt", "priceShock"],
+    "Medien und Gerücht": ["rumor", "ticker", "commentNoise", "algorithm"],
+    "unberechenbar": ["censor", "propaganda", "renaming", "falseOrder", "loss", "displacement", "fragment", "silence", "inflation", "inventory", "debt", "priceShock", "rumor", "ticker", "commentNoise", "algorithm"]
+  };
+  const key = randomFrom(pools[bias] || pools.unberechenbar);
+  return warEvents[key] || warEvents.fragment;
+}
+
+const warEvents = {
+  censor: {
+    label: "Zensur: Namen und Gründe werden geschwärzt.",
+    apply: (text) => text.replace(/\b(Courage|Kattrin|Eilif|Schweizerkas|Krieg|Geschäft|Mutter)\b/g, "████")
+  },
+  propaganda: {
+    label: "Propaganda: Verlust wird als Ordnung ausgegeben.",
+    apply: (text) => `${text}\n\nLAUTSPRECHER: Was verloren ging, war notwendig. Was verkauft wurde, war Versorgung. Was weh tut, heißt Ordnung.`
+  },
+  renaming: {
+    label: "Umbenennung: Figuren verlieren ihre Eigennamen und werden Funktionen.",
+    apply: (text) => text
+      .replace(/\bMutter Courage\b/g, "die Händlerin")
+      .replace(/\bCourage\b/g, "die Händlerin")
+      .replace(/\bEilif\b/g, "der Rekrut")
+      .replace(/\bKattrin\b/g, "das Warnsignal")
+      .replace(/\bSchweizerkas\b/g, "der Kassenträger")
+  },
+  falseOrder: {
+    label: "Falscher Befehl: Eine fremde Instanz schreibt die Szene um.",
+    apply: (text) => `BEFEHL VON AUSSEN: Diese Szene hat ab jetzt keine Unschuld.\n${text}\nBEFEHL ENDE: Wer weiterliest, zählt mit.`
+  },
+  loss: {
+    label: "Verlust: Ein Teil des Textes verschwindet ohne Begründung.",
+    apply: (text) => removeSlice(text)
+  },
+  displacement: {
+    label: "Flucht: Absätze geraten in falsche Reihenfolge.",
+    apply: (text) => shuffleParagraphs(text)
+  },
+  fragment: {
+    label: "Splitterung: Sätze brechen, Sinn wird nur noch in Resten sichtbar.",
+    apply: (text) => splitSentences(text).map((sentence, index) => index % 2 ? `... ${sentence.slice(0, Math.max(12, Math.floor(sentence.length * 0.45)))} / abgebrochen` : sentence).join("\n")
+  },
+  silence: {
+    label: "Stille: Jede dritte Aussage wird durch Schweigen ersetzt.",
+    apply: (text) => splitSentences(text).map((sentence, index) => index % 3 === 2 ? "[STILLE. DER TEXT ANTWORTET NICHT.]" : sentence).join("\n")
+  },
+  inflation: {
+    label: "Inflation: Wörter erhalten Preise, die sofort steigen.",
+    apply: (text) => text.replace(/\b(Wagen|Schuh|Brot|Kind|Krieg|Ware|Leben|Tod)\w*/gi, (word) => `${word} [Preis +${randomInt(3, 40)}%]`)
+  },
+  inventory: {
+    label: "Inventur: Alles Menschliche wird als Bestand erfasst.",
+    apply: (text) => `INVENTUR VOR DER SZENE\nKinder: ungesichert\nMoral: beschädigt\nWare: beweglich\nKörper: gefährdet\n\n${text}`
+  },
+  debt: {
+    label: "Schuld: Jeder Gewinn erzeugt eine offene Rechnung.",
+    apply: (text) => `${text}\n\nOFFENE RECHNUNG: Für jeden Satz, der Überleben sagt, steht irgendwo ein Verlust.`
+  },
+  priceShock: {
+    label: "Preisschock: Der Markt unterbricht die Handlung.",
+    apply: (text) => text.replace(/\n/g, "\nMARKTSTÖRUNG: Preis geändert. Verantwortung nicht lieferbar.\n")
+  },
+  rumor: {
+    label: "Gerücht: Unsichere Nachrichten infizieren die Szene.",
+    apply: (text) => `GERÜCHT: Man sagt, der Krieg sei bald vorbei. Man sagt, das Geschäft beginne erst.\n${text}\nGERÜCHT: Keine Quelle bestätigt die Rettung.`
+  },
+  ticker: {
+    label: "Ticker: Die Szene wird von Echtzeitmeldungen zerschnitten.",
+    apply: (text) => splitSentences(text).map((sentence, index) => `TICKER ${index + 1}: ${sentence}`).join("\n")
+  },
+  commentNoise: {
+    label: "Kommentarspalte: Zuschauerreden fallen in den Text ein.",
+    apply: (text) => `${text}\n\nKOMMENTARE: selber schuld / arme Mutter / Krieg ist halt so / wo kann man spenden / was kostet der Wagen`
+  },
+  algorithm: {
+    label: "Algorithmus: Mitleid wird empfohlen und sofort monetarisiert.",
+    apply: (text) => `EMPFOHLEN WEGEN: Krieg, Mutter, Verlust, Handel.\n${text}\nNÄCHSTES VIDEO: Fünf Wege, im Krieg nicht arm zu wirken.`
+  }
+};
+
+function randomFrom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function removeSlice(text) {
+  if (text.length < 80) return "[VERLUST] " + text;
+  const start = randomInt(0, Math.max(0, Math.floor(text.length * 0.55)));
+  const length = randomInt(40, Math.max(60, Math.floor(text.length * 0.22)));
+  return `${text.slice(0, start)}\n[VERLUST: ${length} ZEICHEN FEHLEN]\n${text.slice(start + length)}`;
+}
+
+function shuffleParagraphs(text) {
+  const paragraphs = text.split(/\n{2,}/).filter(Boolean);
+  if (paragraphs.length < 3) return text.split(/(?<=[.!?])\s+/).reverse().join("\n");
+  return paragraphs
+    .map((value) => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value)
+    .join("\n\n");
+}
+
+function resetWarLog() {
+  state.warLog = [];
+  saveState();
+  renderWarLog();
+}
+
+function renderWarLog() {
+  const log = document.getElementById("warLog");
+  if (!log) return;
+  if (!state.warLog.length) {
+    log.textContent = "Noch kein Einschlag.";
+    return;
+  }
+  log.innerHTML = state.warLog.slice(-5).reverse().map((entry) => `
+    <article>
+      <strong>${new Date(entry.at).toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" })} / ${escapeHtml(entry.bias)} / ${entry.intensity} Einschlag${entry.intensity > 1 ? "e" : ""}</strong>
+      <ul>${entry.events.map((event) => `<li>${escapeHtml(event)}</li>`).join("")}</ul>
+    </article>
+  `).join("");
 }
 
 function renderStyleReport() {
@@ -1441,6 +1599,7 @@ function renderSummary() {
   const cards = [
     ["Affektantworten", list(state.choices.affect_check)],
     ["Text-Hacks", state.hacks.length ? `${state.hacks.length} gespeicherte Eingriffe` : "Noch kein Hack"],
+    ["Kriegsereignisse", state.warLog.length ? `${state.warLog.length} Einschlagsserien` : "noch kein Einschlag"],
     ["Renovierte Fassung", state.montage.length ? `${state.montage.length} montierte Blöcke` : "Noch keine Montage"],
     ["Reglerstände", state.sliderHistory.length ? `${state.sliderHistory.length} gespeicherte Builds` : "Noch kein Verlauf"],
     ["Vergleichsbericht", state.finalReport ? "generiert" : "noch nicht generiert"],
@@ -1616,6 +1775,8 @@ function bindEvents() {
     if (target.dataset.action === "add-custom-block") addCustomBlock();
     if (target.dataset.action === "generate-preview") generatePreview();
     if (target.dataset.action === "generate-macro-preview") generateMacroPreview();
+    if (target.dataset.action === "war-text") applyWarMode();
+    if (target.dataset.action === "reset-war-log") resetWarLog();
     if (target.dataset.action === "restyle-preview") restylePreview();
     if (target.dataset.action === "add-preview-block") addPreviewBlock();
     if (target.dataset.action === "run-stylometry") renderStylometry();
