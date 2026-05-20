@@ -1,8 +1,14 @@
-const STORAGE_KEY = "mutter_courage_brecht_maschine_v16";
+const STORAGE_KEY = "mutter_courage_brecht_maschine_v17";
 const MIN_WORD_PAGES = 10;
 const WORDS_PER_A4_PAGE = 430;
 const sourceCorpus = window.COURAGE_TEXT || [];
 const stopwords = new Set("der die das den dem des ein eine einer einem einen und oder aber doch nur auch zu in im am an auf mit von für als ist sind war waren wird werden es er sie wir ihr ich man nicht kein keine so da wo wie was wenn dann".split(" "));
+const soundEngine = {
+  context: null,
+  master: null,
+  atmosphere: null,
+  enabled: false
+};
 
 const pdfs = {
   courage: "assets/docs/Mutter Courage und ihre Kinder.pdf",
@@ -350,7 +356,8 @@ function freshState() {
     conceptNotes: {},
     generatedConcept: "",
     finalReport: "",
-    warLog: []
+    warLog: [],
+    soundEnabled: false
   };
 }
 
@@ -412,6 +419,7 @@ function renderConceptWall() {
 }
 
 function hydrate() {
+  state.soundEnabled = false;
   document.querySelectorAll("[data-field]").forEach((el) => {
     const field = el.dataset.field;
     if (state.fields[field] !== undefined) el.value = state.fields[field];
@@ -435,6 +443,7 @@ function hydrate() {
   const preview = document.getElementById("previewText");
   if (preview) preview.value = state.previewText || "";
   renderWarLog();
+  renderSoundUi();
   renderStyleReport();
   renderHackArchive();
   renderSourceReader();
@@ -868,6 +877,7 @@ function applyWarMode() {
   renderWarLog();
   renderStyleReport();
   renderStylometry();
+  playWarEventSound(events, intensity, bias);
 }
 
 function pickWarEvent(bias) {
@@ -998,6 +1008,249 @@ function renderWarLog() {
       <ul>${entry.events.map((event) => `<li>${escapeHtml(event)}</li>`).join("")}</ul>
     </article>
   `).join("");
+}
+
+async function toggleWarSound() {
+  if (state.soundEnabled) {
+    state.soundEnabled = false;
+    stopWarAtmosphere();
+    saveState();
+    renderSoundUi();
+    return;
+  }
+  try {
+    await ensureAudioContext();
+  } catch (error) {
+    const status = document.getElementById("warSoundStatus");
+    if (status) status.textContent = "Audio konnte nicht gestartet werden. Der Browser blockiert Web Audio.";
+    return;
+  }
+  state.soundEnabled = true;
+  updateMasterVolume();
+  startWarAtmosphere();
+  playAlarmSweep();
+  saveState();
+  renderSoundUi();
+}
+
+async function ensureAudioContext() {
+  if (!soundEngine.context) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) throw new Error("Web Audio wird in diesem Browser nicht unterstützt.");
+    soundEngine.context = new AudioCtx();
+    soundEngine.master = soundEngine.context.createGain();
+    soundEngine.master.connect(soundEngine.context.destination);
+  }
+  if (soundEngine.context.state === "suspended") {
+    await soundEngine.context.resume();
+  }
+  updateMasterVolume();
+}
+
+function renderSoundUi() {
+  const button = document.getElementById("warSoundButton");
+  const status = document.getElementById("warSoundStatus");
+  if (button) button.textContent = state.soundEnabled ? "Soundeffekte stoppen" : "Soundeffekte scharf schalten";
+  if (!status) return;
+  const profile = fieldValue("war_sound_profile", "Frontnah: Einschlag, Sirene, Staub");
+  const volume = fieldValue("war_sound_volume", "86");
+  status.textContent = state.soundEnabled
+    ? `LIVE: ${profile} / Lautstärke ${volume}%. Jeder Kriegseinschlag bekommt Sound.`
+    : "Sound ist aus. Browser starten Audio erst nach Klick.";
+  status.classList.toggle("is-live", Boolean(state.soundEnabled));
+}
+
+function updateMasterVolume() {
+  if (!soundEngine.master) return;
+  const volume = Math.min(1, Math.max(0, Number(fieldValue("war_sound_volume", "86")) / 100));
+  soundEngine.master.gain.setTargetAtTime(volume * 0.85, soundEngine.context.currentTime, 0.03);
+  renderSoundUi();
+}
+
+function startWarAtmosphere() {
+  stopWarAtmosphere();
+  const ctx = soundEngine.context;
+  if (!ctx || !soundEngine.master) return;
+  const drone = ctx.createOscillator();
+  const grit = ctx.createOscillator();
+  const droneGain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+  drone.type = "sawtooth";
+  grit.type = "triangle";
+  drone.frequency.value = 46;
+  grit.frequency.value = 61;
+  filter.type = "lowpass";
+  filter.frequency.value = 240;
+  droneGain.gain.value = 0.035;
+  drone.connect(filter);
+  grit.connect(filter);
+  filter.connect(droneGain);
+  droneGain.connect(soundEngine.master);
+  drone.start();
+  grit.start();
+  soundEngine.atmosphere = { nodes: [drone, grit], gain: droneGain };
+}
+
+function stopWarAtmosphere() {
+  if (!soundEngine.atmosphere) return;
+  const ctx = soundEngine.context;
+  const { nodes, gain } = soundEngine.atmosphere;
+  if (ctx && gain) gain.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
+  window.setTimeout(() => {
+    nodes.forEach((node) => {
+      try {
+        node.stop();
+        node.disconnect();
+      } catch (error) {
+        // Already stopped.
+      }
+    });
+  }, 180);
+  soundEngine.atmosphere = null;
+}
+
+async function playWarEventSound(events = [], intensity = 1, bias = "") {
+  if (!state.soundEnabled) return;
+  await ensureAudioContext();
+  const profile = fieldValue("war_sound_profile", "Frontnah: Einschlag, Sirene, Staub");
+  const count = Math.max(1, Math.min(6, Number(intensity) || 1));
+  for (let i = 0; i < count; i += 1) {
+    const offset = i * 0.42;
+    playImpact(offset, 0.85 + i * 0.08);
+    if (/Propaganda|Zensur|Lautsprecher/i.test(profile + " " + bias + " " + events.join(" "))) playPropagandaBurst(offset + 0.12);
+    if (/Flucht|Verlust|Stille/i.test(profile + " " + bias + " " + events.join(" "))) playPulse(offset + 0.08);
+    if (/Markt|Inflation|Preis|Ökonomie/i.test(profile + " " + bias + " " + events.join(" "))) playMetalMarket(offset + 0.16);
+    if (/Medien|Ticker|Gerücht|Algorithmus|Kommentar/i.test(profile + " " + bias + " " + events.join(" "))) playStaticCut(offset + 0.1);
+  }
+  if (/Frontnah|unberechenbar/i.test(profile + " " + bias)) playAlarmSweep(0.15);
+}
+
+function playImpact(offset = 0, strength = 1) {
+  const ctx = soundEngine.context;
+  if (!ctx || !soundEngine.master) return;
+  const start = ctx.currentTime + offset;
+  const boom = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+  boom.type = "sine";
+  boom.frequency.setValueAtTime(92, start);
+  boom.frequency.exponentialRampToValueAtTime(31, start + 0.36);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.95 * strength, start + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.85);
+  filter.type = "lowpass";
+  filter.frequency.value = 180;
+  boom.connect(filter);
+  filter.connect(gain);
+  gain.connect(soundEngine.master);
+  boom.start(start);
+  boom.stop(start + 0.9);
+  playNoiseBurst(start, 0.42, 0.32 * strength, 900);
+}
+
+function playNoiseBurst(start, duration, level, filterFrequency) {
+  const ctx = soundEngine.context;
+  const samples = Math.max(1, Math.floor(ctx.sampleRate * duration));
+  const buffer = ctx.createBuffer(1, samples, ctx.sampleRate);
+  const channel = buffer.getChannelData(0);
+  for (let i = 0; i < samples; i += 1) {
+    channel[i] = (Math.random() * 2 - 1) * (1 - i / samples);
+  }
+  const noise = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+  noise.buffer = buffer;
+  filter.type = "bandpass";
+  filter.frequency.value = filterFrequency;
+  filter.Q.value = 0.9;
+  gain.gain.setValueAtTime(level, start);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(soundEngine.master);
+  noise.start(start);
+  noise.stop(start + duration);
+}
+
+function playAlarmSweep(offset = 0) {
+  const ctx = soundEngine.context;
+  if (!ctx || !soundEngine.master) return;
+  const start = ctx.currentTime + offset;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(360, start);
+  osc.frequency.linearRampToValueAtTime(820, start + 0.7);
+  osc.frequency.linearRampToValueAtTime(360, start + 1.4);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.linearRampToValueAtTime(0.22, start + 0.08);
+  gain.gain.linearRampToValueAtTime(0.0001, start + 1.5);
+  osc.connect(gain);
+  gain.connect(soundEngine.master);
+  osc.start(start);
+  osc.stop(start + 1.55);
+}
+
+function playPropagandaBurst(offset = 0) {
+  const ctx = soundEngine.context;
+  const start = ctx.currentTime + offset;
+  [0, 0.16, 0.32].forEach((step, index) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = index % 2 ? 230 : 180;
+    gain.gain.setValueAtTime(0.0001, start + step);
+    gain.gain.linearRampToValueAtTime(0.24, start + step + 0.02);
+    gain.gain.linearRampToValueAtTime(0.0001, start + step + 0.12);
+    osc.connect(gain);
+    gain.connect(soundEngine.master);
+    osc.start(start + step);
+    osc.stop(start + step + 0.14);
+  });
+}
+
+function playPulse(offset = 0) {
+  const ctx = soundEngine.context;
+  const start = ctx.currentTime + offset;
+  [0, 0.24, 0.48, 0.74].forEach((step) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = 72;
+    gain.gain.setValueAtTime(0.0001, start + step);
+    gain.gain.linearRampToValueAtTime(0.38, start + step + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + step + 0.2);
+    osc.connect(gain);
+    gain.connect(soundEngine.master);
+    osc.start(start + step);
+    osc.stop(start + step + 0.22);
+  });
+}
+
+function playMetalMarket(offset = 0) {
+  const ctx = soundEngine.context;
+  const start = ctx.currentTime + offset;
+  [740, 980, 1280, 640].forEach((freq, index) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    const time = start + index * 0.09;
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(0.24, time + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
+    osc.connect(gain);
+    gain.connect(soundEngine.master);
+    osc.start(time);
+    osc.stop(time + 0.18);
+  });
+}
+
+function playStaticCut(offset = 0) {
+  const ctx = soundEngine.context;
+  if (!ctx) return;
+  playNoiseBurst(ctx.currentTime + offset, 0.18, 0.35, 2200);
+  playNoiseBurst(ctx.currentTime + offset + 0.24, 0.16, 0.25, 3100);
 }
 
 function renderStyleReport() {
@@ -1946,6 +2199,7 @@ function bindEvents() {
     const target = event.target;
     if (target.matches("[data-field]")) {
       state.fields[target.dataset.field] = target.value;
+      if (target.dataset.field === "war_sound_volume") updateMasterVolume();
       saveState();
     }
     if (target.matches("[data-slider]")) {
@@ -2000,6 +2254,7 @@ function bindEvents() {
     if (target.dataset.action === "generate-preview") generatePreview();
     if (target.dataset.action === "generate-macro-preview") generateMacroPreview();
     if (target.dataset.action === "war-text") applyWarMode();
+    if (target.dataset.action === "toggle-war-sound") toggleWarSound();
     if (target.dataset.action === "reset-war-log") resetWarLog();
     if (target.dataset.action === "restyle-preview") restylePreview();
     if (target.dataset.action === "add-preview-block") addPreviewBlock();

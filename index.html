@@ -204,7 +204,19 @@
               </div>
               <div class="button-row">
                 <button type="button" class="warning-button large-action" data-action="war-text">Kriegsereignis auslösen</button>
+                <button type="button" class="warning-button large-action" data-action="toggle-war-sound" id="warSoundButton">Soundeffekte scharf schalten</button>
                 <button type="button" class="ghost-button" data-action="reset-war-log">Ereignisprotokoll leeren</button>
+              </div>
+              <div class="sound-console" aria-label="Soundsteuerung">
+                <label class="question-block compact-field" for="warSoundProfile">Soundprofil<select id="warSoundProfile" data-field="war_sound_profile">
+                  <option>Frontnah: Einschlag, Sirene, Staub</option>
+                  <option>Propaganda-Lautsprecher</option>
+                  <option>Flucht: Atem, Puls, Stille</option>
+                  <option>Markt unter Beschuss</option>
+                  <option>Medienkrieg: Ticker und Störung</option>
+                </select></label>
+                <label class="question-block compact-field" for="warSoundVolume">Lautstärke<input id="warSoundVolume" type="range" min="0" max="100" value="86" data-field="war_sound_volume"></label>
+                <div id="warSoundStatus" class="sound-status">Sound ist aus. Browser starten Audio erst nach Klick.</div>
               </div>
               <div id="warLog" class="war-log" aria-live="polite">Noch kein Einschlag.</div>
             </div>
